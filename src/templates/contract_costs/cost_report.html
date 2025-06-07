@@ -1,0 +1,372 @@
+{% extends 'layout.html' %}
+
+{% block title %}تقرير تكاليف العقد{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/stamp_styles.css') }}">
+<style>
+    .chart-container {
+        height: 300px;
+        margin-bottom: 20px;
+    }
+    .summary-card {
+        transition: all 0.3s;
+    }
+    .summary-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">تقرير تكاليف العقد</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('contracts.index') }}">العقود</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('contracts.view_contract', contract_id=contract.id) }}">{{ contract.contract_number }}</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('contract_costs.contract_expenses', contract_id=contract.id) }}">المصروفات والتكاليف</a></li>
+        <li class="breadcrumb-item active">تقرير التكاليف</li>
+    </ol>
+    
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('contract_costs.print_cost_report', contract_id=contract.id) }}" class="btn btn-primary" target="_blank">
+                <i class="fas fa-print me-1"></i> طباعة التقرير
+            </a>
+            <a href="{{ url_for('contract_costs.contract_expenses', contract_id=contract.id) }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-right me-1"></i> العودة إلى المصروفات
+            </a>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-file-contract me-1"></i>
+            معلومات العقد
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>رقم العقد:</strong> {{ contract.contract_number }}</p>
+                    <p><strong>العميل:</strong> {{ contract.client_name }}</p>
+                    <p><strong>نوع العقد:</strong> {{ contract.contract_type }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>تاريخ البدء:</strong> {{ contract.start_date.strftime('%Y-%m-%d') }}</p>
+                    <p><strong>تاريخ الانتهاء:</strong> {{ contract.end_date.strftime('%Y-%m-%d') }}</p>
+                    <p><strong>قيمة العقد:</strong> {{ "{:,.2f}".format(contract.total_amount) }} ريال</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-xl-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-pie me-1"></i>
+                    توزيع المصروفات حسب النوع
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="expenseTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar me-1"></i>
+                    ملخص التكاليف والأرباح
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="profitChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card bg-primary text-white summary-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي قيمة العقد</h5>
+                    <h2 class="display-4">{{ "{:,.2f}".format(contract.total_amount) }}</h2>
+                    <p class="card-text">ريال سعودي</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card bg-warning text-white summary-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي التكاليف</h5>
+                    <h2 class="display-4">{{ "{:,.2f}".format(total_costs) }}</h2>
+                    <p class="card-text">ريال سعودي</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card {% if profit > 0 %}bg-success{% else %}bg-danger{% endif %} text-white summary-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">صافي الربح</h5>
+                    <h2 class="display-4">{{ "{:,.2f}".format(profit) }}</h2>
+                    <p class="card-text">ريال سعودي ({{ "{:.2f}".format(profit_percentage) }}%)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-money-bill-alt me-1"></i>
+                    تفاصيل المصروفات
+                </div>
+                <div class="card-body">
+                    {% if expenses %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>نوع المصروف</th>
+                                    <th>المبلغ</th>
+                                    <th>الوصف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for expense in expenses %}
+                                <tr>
+                                    <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ expense.expense_type.name }}</td>
+                                    <td>{{ "{:,.2f}".format(expense.amount) }} ريال</td>
+                                    <td>{{ expense.description }}</td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-active">
+                                    <td colspan="2"><strong>الإجمالي</strong></td>
+                                    <td><strong>{{ "{:,.2f}".format(total_expenses) }} ريال</strong></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        لا توجد مصروفات مسجلة لهذا العقد.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-shopping-cart me-1"></i>
+                    أوامر الشراء المرتبطة
+                </div>
+                <div class="card-body">
+                    {% if purchase_links %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>رقم أمر الشراء</th>
+                                    <th>المورد</th>
+                                    <th>المبلغ المخصص</th>
+                                    <th>الوصف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for link in purchase_links %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('purchases.view_purchase_order', purchase_order_id=link.purchase_order.id) }}">
+                                            {{ link.purchase_order.order_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ link.purchase_order.supplier.name }}</td>
+                                    <td>{{ "{:,.2f}".format(link.amount_allocated) }} ريال</td>
+                                    <td>{{ link.description }}</td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-active">
+                                    <td colspan="2"><strong>الإجمالي</strong></td>
+                                    <td><strong>{{ "{:,.2f}".format(total_purchases) }} ريال</strong></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        لا توجد أوامر شراء مرتبطة بهذا العقد.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-chart-line me-1"></i>
+            تحليل الربحية
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>نسبة التكاليف من قيمة العقد</h5>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ (total_costs / contract.total_amount * 100) if contract.total_amount > 0 else 0 }}%;" 
+                             aria-valuenow="{{ (total_costs / contract.total_amount * 100) if contract.total_amount > 0 else 0 }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ "{:.2f}".format(total_costs / contract.total_amount * 100) if contract.total_amount > 0 else 0 }}%
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>نسبة الربح من قيمة العقد</h5>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar {% if profit_percentage > 0 %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" 
+                             style="width: {{ profit_percentage if profit_percentage > 0 else -profit_percentage }}%;" 
+                             aria-valuenow="{{ profit_percentage if profit_percentage > 0 else -profit_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ "{:.2f}".format(profit_percentage) }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5>توزيع التكاليف</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>البند</th>
+                                <th>النسبة</th>
+                                <th>المبلغ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>المصروفات المباشرة</td>
+                                <td>{{ "{:.2f}".format(total_expenses / total_costs * 100) if total_costs > 0 else 0 }}%</td>
+                                <td>{{ "{:,.2f}".format(total_expenses) }} ريال</td>
+                            </tr>
+                            <tr>
+                                <td>المشتريات</td>
+                                <td>{{ "{:.2f}".format(total_purchases / total_costs * 100) if total_costs > 0 else 0 }}%</td>
+                                <td>{{ "{:,.2f}".format(total_purchases) }} ريال</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h5>تحليل الربحية</h5>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th>إجمالي قيمة العقد</th>
+                                <td>{{ "{:,.2f}".format(contract.total_amount) }} ريال</td>
+                            </tr>
+                            <tr>
+                                <th>إجمالي التكاليف</th>
+                                <td>{{ "{:,.2f}".format(total_costs) }} ريال</td>
+                            </tr>
+                            <tr class="{% if profit > 0 %}table-success{% else %}table-danger{% endif %}">
+                                <th>صافي الربح</th>
+                                <td>{{ "{:,.2f}".format(profit) }} ريال ({{ "{:.2f}".format(profit_percentage) }}%)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // بيانات الرسم البياني
+        const chartData = {{ chart_data|safe }};
+        
+        // رسم بياني لتوزيع المصروفات حسب النوع
+        const expenseTypeCtx = document.getElementById('expenseTypeChart').getContext('2d');
+        new Chart(expenseTypeCtx, {
+            type: 'pie',
+            data: {
+                labels: chartData.expense_types,
+                datasets: [{
+                    data: chartData.expense_amounts,
+                    backgroundColor: [
+                        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                        '#5a5c69', '#858796', '#6f42c1', '#20c9a6', '#fd7e14'
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    title: {
+                        display: true,
+                        text: 'توزيع المصروفات حسب النوع'
+                    }
+                }
+            }
+        });
+        
+        // رسم بياني للربح والتكاليف
+        const profitCtx = document.getElementById('profitChart').getContext('2d');
+        new Chart(profitCtx, {
+            type: 'bar',
+            data: {
+                labels: ['قيمة العقد', 'التكاليف', 'الربح'],
+                datasets: [{
+                    label: 'المبلغ (ريال)',
+                    data: [
+                        {{ contract.total_amount }},
+                        {{ total_costs }},
+                        {{ profit }}
+                    ],
+                    backgroundColor: [
+                        '#4e73df',
+                        '#f6c23e',
+                        {{ profit > 0 ? "'#1cc88a'" : "'#e74a3b'" }}
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'مقارنة قيمة العقد والتكاليف والربح'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

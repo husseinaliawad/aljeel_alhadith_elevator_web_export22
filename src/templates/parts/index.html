@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}قطع الغيار - برنامج الجيل الحديث للمصاعد{% endblock %}
+
+{% block main_content %}
+<div class="parts-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">إدارة قطع الغيار</h2>
+        <a href="{{ url_for('parts.add') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i> إضافة قطعة غيار جديدة
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control search-input" placeholder="بحث في قطع الغيار..." data-target="parts-table">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-end">
+                        <div class="dropdown me-2">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter me-1"></i> تصفية
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('parts.index', stock='all') }}">جميع قطع الغيار</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts.index', stock='low') }}">مخزون منخفض</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('parts.index', stock='out') }}">غير متوفر</a></li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-outline-primary" id="printButton">
+                            <i class="fas fa-print me-1"></i> طباعة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover" id="parts-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable">رقم القطعة</th>
+                            <th class="sortable">اسم القطعة</th>
+                            <th class="sortable">الكمية المتوفرة</th>
+                            <th class="sortable">الحد الأدنى</th>
+                            <th class="sortable">سعر الوحدة</th>
+                            <th class="sortable">الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for part in parts %}
+                        <tr>
+                            <td>{{ part.part_number }}</td>
+                            <td>{{ part.name }}</td>
+                            <td>{{ part.quantity }}</td>
+                            <td>{{ part.min_quantity }}</td>
+                            <td>{{ part.unit_price }} ريال</td>
+                            <td>
+                                {% if part.quantity == 0 %}
+                                <span class="badge bg-danger">غير متوفر</span>
+                                {% elif part.quantity < part.min_quantity %}
+                                <span class="badge bg-warning">مخزون منخفض</span>
+                                {% else %}
+                                <span class="badge bg-success">متوفر</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('parts.view', part_id=part.id) }}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="عرض التفاصيل">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('parts.edit', part_id=part.id) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('parts.delete', part_id=part.id) }}" class="btn btn-sm btn-danger btn-delete" data-bs-toggle="tooltip" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if not parts %}
+            <div class="text-center py-5">
+                <i class="fas fa-cogs fa-4x text-muted mb-3"></i>
+                <h5>لا توجد قطع غيار مسجلة</h5>
+                <p class="text-muted">قم بإضافة قطعة غيار جديدة للبدء</p>
+                <a href="{{ url_for('parts.add') }}" class="btn btn-primary mt-2">
+                    <i class="fas fa-plus-circle me-1"></i> إضافة قطعة غيار جديدة
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- إحصائيات قطع الغيار -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">حالة المخزون</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="stockStatusChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">أكثر قطع الغيار استخداماً</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="topPartsChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // رسم بياني لحالة المخزون
+        var stockCtx = document.getElementById('stockStatusChart').getContext('2d');
+        var stockChart = new Chart(stockCtx, {
+            type: 'pie',
+            data: {
+                labels: ['متوفر', 'مخزون منخفض', 'غير متوفر'],
+                datasets: [{
+                    data: {{ stock_data|tojson }},
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        'rgba(220, 53, 69, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // رسم بياني لأكثر قطع الغيار استخداماً
+        var topPartsCtx = document.getElementById('topPartsChart').getContext('2d');
+        var topPartsChart = new Chart(topPartsCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ top_parts_labels|tojson }},
+                datasets: [{
+                    label: 'عدد مرات الاستخدام',
+                    data: {{ top_parts_data|tojson }},
+                    backgroundColor: 'rgba(13, 202, 240, 0.7)',
+                    borderColor: 'rgba(13, 202, 240, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        
+        // طباعة الجدول
+        document.getElementById('printButton').addEventListener('click', function() {
+            window.print();
+        });
+    });
+</script>
+{% endblock %}

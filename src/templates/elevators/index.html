@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}المصاعد - برنامج الجيل الحديث للمصاعد{% endblock %}
+
+{% block main_content %}
+<div class="elevators-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">إدارة المصاعد</h2>
+        <a href="{{ url_for('elevators.add') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i> إضافة مصعد جديد
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control search-input" placeholder="بحث في المصاعد..." data-target="elevators-table">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-end">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter me-1"></i> تصفية
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('elevators.index', status='all') }}">جميع المصاعد</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('elevators.index', status='active') }}">المصاعد النشطة</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('elevators.index', status='maintenance') }}">قيد الصيانة</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('elevators.index', status='inactive') }}">غير نشطة</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover" id="elevators-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable">رقم المصعد</th>
+                            <th class="sortable">المبنى</th>
+                            <th class="sortable">النوع</th>
+                            <th class="sortable">تاريخ التركيب</th>
+                            <th class="sortable">آخر صيانة</th>
+                            <th class="sortable">الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for elevator in elevators %}
+                        <tr>
+                            <td>{{ elevator.elevator_number }}</td>
+                            <td>{{ elevator.building_name }}</td>
+                            <td>{{ elevator.type }}</td>
+                            <td>{{ elevator.installation_date }}</td>
+                            <td>{{ elevator.last_maintenance_date or 'لا يوجد' }}</td>
+                            <td>
+                                {% if elevator.status == 'نشط' %}
+                                <span class="badge bg-success">{{ elevator.status }}</span>
+                                {% elif elevator.status == 'قيد الصيانة' %}
+                                <span class="badge bg-warning">{{ elevator.status }}</span>
+                                {% else %}
+                                <span class="badge bg-danger">{{ elevator.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('elevators.view', elevator_id=elevator.id) }}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="عرض التفاصيل">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('elevators.edit', elevator_id=elevator.id) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('elevators.delete', elevator_id=elevator.id) }}" class="btn btn-sm btn-danger btn-delete" data-bs-toggle="tooltip" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if not elevators %}
+            <div class="text-center py-5">
+                <i class="fas fa-elevator fa-4x text-muted mb-3"></i>
+                <h5>لا توجد مصاعد مسجلة</h5>
+                <p class="text-muted">قم بإضافة مصعد جديد للبدء</p>
+                <a href="{{ url_for('elevators.add') }}" class="btn btn-primary mt-2">
+                    <i class="fas fa-plus-circle me-1"></i> إضافة مصعد جديد
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- إحصائيات المصاعد -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">إحصائيات المصاعد</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="elevatorStatusChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">توزيع أنواع المصاعد</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="elevatorTypeChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // رسم بياني لحالة المصاعد
+        var statusCtx = document.getElementById('elevatorStatusChart').getContext('2d');
+        var statusChart = new Chart(statusCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ status_labels|tojson }},
+                datasets: [{
+                    data: {{ status_data|tojson }},
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        'rgba(220, 53, 69, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // رسم بياني لأنواع المصاعد
+        var typeCtx = document.getElementById('elevatorTypeChart').getContext('2d');
+        var typeChart = new Chart(typeCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ type_labels|tojson }},
+                datasets: [{
+                    label: 'عدد المصاعد',
+                    data: {{ type_data|tojson }},
+                    backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

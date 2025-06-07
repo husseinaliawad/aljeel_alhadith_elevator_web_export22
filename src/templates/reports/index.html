@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+
+{% block title %}التقارير - برنامج الجيل الحديث للمصاعد{% endblock %}
+
+{% block main_content %}
+<div class="reports-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">التقارير والإحصائيات</h2>
+        <div>
+            <button class="btn btn-outline-primary me-2" id="printReportBtn">
+                <i class="fas fa-print me-1"></i> طباعة التقرير
+            </button>
+            <div class="btn-group">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-file-export me-1"></i> تصدير
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+                    <li><a class="dropdown-item" href="#" id="exportPdf"><i class="fas fa-file-pdf me-2"></i> PDF</a></li>
+                    <li><a class="dropdown-item" href="#" id="exportExcel"><i class="fas fa-file-excel me-2"></i> Excel</a></li>
+                    <li><a class="dropdown-item" href="#" id="exportCsv"><i class="fas fa-file-csv me-2"></i> CSV</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">أنواع التقارير</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="nav flex-column nav-pills" id="reports-tab" role="tablist" aria-orientation="vertical">
+                        <button class="nav-link active text-end" id="maintenance-tab" data-bs-toggle="pill" data-bs-target="#maintenance" type="button" role="tab" aria-controls="maintenance" aria-selected="true">
+                            <i class="fas fa-tools me-2"></i> تقارير الصيانة
+                        </button>
+                        <button class="nav-link text-end" id="financial-tab" data-bs-toggle="pill" data-bs-target="#financial" type="button" role="tab" aria-controls="financial" aria-selected="false">
+                            <i class="fas fa-money-bill-wave me-2"></i> التقارير المالية
+                        </button>
+                        <button class="nav-link text-end" id="inventory-tab" data-bs-toggle="pill" data-bs-target="#inventory" type="button" role="tab" aria-controls="inventory" aria-selected="false">
+                            <i class="fas fa-boxes me-2"></i> تقارير المخزون
+                        </button>
+                        <button class="nav-link text-end" id="performance-tab" data-bs-toggle="pill" data-bs-target="#performance" type="button" role="tab" aria-controls="performance" aria-selected="false">
+                            <i class="fas fa-chart-line me-2"></i> تقارير الأداء
+                        </button>
+                        <button class="nav-link text-end" id="custom-tab" data-bs-toggle="pill" data-bs-target="#custom" type="button" role="tab" aria-controls="custom" aria-selected="false">
+                            <i class="fas fa-sliders-h me-2"></i> تقارير مخصصة
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">خيارات التقرير</h5>
+                </div>
+                <div class="card-body">
+                    <form id="reportOptionsForm">
+                        <div class="mb-3">
+                            <label for="reportPeriod" class="form-label">الفترة الزمنية</label>
+                            <select class="form-select" id="reportPeriod">
+                                <option value="today">اليوم</option>
+                                <option value="yesterday">الأمس</option>
+                                <option value="this_week">هذا الأسبوع</option>
+                                <option value="last_week">الأسبوع الماضي</option>
+                                <option value="this_month" selected>هذا الشهر</option>
+                                <option value="last_month">الشهر الماضي</option>
+                                <option value="this_year">هذه السنة</option>
+                                <option value="last_year">السنة الماضية</option>
+                                <option value="custom">فترة مخصصة</option>
+                            </select>
+                        </div>
+                        
+                        <div id="customDateRange" class="mb-3 d-none">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="startDate" class="form-label">من تاريخ</label>
+                                    <input type="date" class="form-control" id="startDate">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="endDate" class="form-label">إلى تاريخ</label>
+                                    <input type="date" class="form-control" id="endDate">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="reportFormat" class="form-label">تنسيق التقرير</label>
+                            <select class="form-select" id="reportFormat">
+                                <option value="detailed">تفصيلي</option>
+                                <option value="summary" selected>ملخص</option>
+                                <option value="chart">رسوم بيانية</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-primary" id="generateReportBtn">
+                                <i class="fas fa-sync me-1"></i> إنشاء التقرير
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <div class="tab-content" id="reports-tabContent">
+                        <!-- تقارير الصيانة -->
+                        <div class="tab-pane fade show active" id="maintenance" role="tabpanel" aria-labelledby="maintenance-tab">
+                            <h4 class="mb-4">تقارير الصيانة</h4>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-0">إجمالي طلبات الصيانة</h6>
+                                                    <p class="display-6 mb-0">{{ maintenance_stats.total }}</p>
+                                                </div>
+                                                <i class="fas fa-tools fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-0">طلبات مكتملة</h6>
+                                                    <p class="display-6 mb-0">{{ maintenance_stats.completed }}</p>
+                                                </div>
+                                                <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-warning text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-0">طلبات قيد التنفيذ</h6>
+                                                    <p class="display-6 mb-0">{{ maintenance_stats.in_progress }}</p>
+                                                </div>
+                                                <i class="fas fa-clock fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-header bg-white">
+                                            <h5 class="card-title mb-0">توزيع طلبات الصيانة حسب النوع</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="maintenanceTypeChart" width="400" height="300"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-header bg-white">
+                                            <h5 class="card-title mb-0">توزيع طلبات الصيانة حسب الحالة</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="maintenanceStatusChart" width="400" height="300"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="card-title mb-0">طلبات الصيانة خلال الفترة</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="maintenanceTrendChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header bg-white">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h5 class="card-title mb-0">قائمة طلبات الصيانة</h5>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                                <input type="text" class="form-control search-input" placeholder="بحث..." data-target="maintenance-table">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="maintenance-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="sortable">رقم الطلب</th>
+                                                    <th class="sortable">تاريخ الطلب</th>
+                                                    <th class="sortable">نوع الصيانة</th>
+                                                    <th class="sortable">المصعد</th>
+                                                    <th class="sortable">الحالة</th>
+                                                    <th class="sortable">الفني</th>
+                                                    <th class="sortable">وقت الإنجاز</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for request in maintenance_requests %}
+                                                <tr>
+                                                    <td>{{ request.id }}</td>
+                                                    <td>{{ request.date }}</td>
+                                                    <td>{{ request.type }}</td>
+                                                    <td>{{ request.elevator }}</td>
+                                                    <td>
+                                                        {% if request.status == 'completed' %}
+                                                        <span class="badge bg-success">مكتمل</span>
+                                                        {% elif request.status == 'in_progress' %}
+                                                        <span class="badge bg-warning">قيد التنفيذ</span>
+                                                        {% elif request.status == 'pending' %}
+                                                        <span class="badge bg-info">معلق</span>
+                                                        {% elif request.status == 'cancelled' %}
+                                                        <span class="badge bg-danger">ملغي</span>
+                                                        {% else %}
+                                                        <span class="badge bg-secondary">{{ request.status }}</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ request.technician }}</td>
+                                                    <td>{{ request.completion_time }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- التقارير المالية -->
+                        <div class="tab-pane fade" id="financial" role="tabpanel" aria-labelledby="financial-tab">
+                            <h4 class="mb-4">التقارير المالية</h4>
+                            
+                            <!-- محتوى التقارير المالية -->
+                        </div>
+                        
+                        <!-- تقارير المخزون -->
+                        <div class="tab-pane fade" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
+                            <h4 class="mb-4">تقارير المخزون</h4>
+                            
+                            <!-- محتوى تقارير المخزون -->
+                        </div>
+                        
+                        <!-- تقارير الأداء -->
+                        <div class="tab-pane fade" id="performance" role="tabpanel" aria-labelledby="performance-tab">
+                            <h4 class="mb-4">تقارير الأداء</h4>
+                            
+                            <!-- محتوى تقارير الأداء -->
+                        </div>
+                        
+                        <!-- تقارير مخصصة -->
+                        <div class="tab-pane fade" id="custom" role="tabpanel" aria-labelledby="custom-tab">
+                            <h4 class="mb-4">تقارير مخصصة</h4>
+                            
+                            <!-- محتوى التقارير المخصصة -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // إظهار/إخفاء حقول التاريخ المخصص
+        document.getElementById('reportPeriod').addEventListener('change', function() {
+            const customDateRange = document.getElementById('customDateRange');
+            if (this.value === 'custom') {
+                customDateRange.classList.remove('d-none');
+            } else {
+                customDateRange.classList.add('d-none');
+            }
+        });
+        
+        // رسم بياني لتوزيع طلبات الصيانة حسب النوع
+        var typeCtx = document.getElementById('maintenanceTypeChart').getContext('2d');
+        var typeChart = new Chart(typeCtx, {
+            type: 'pie',
+            data: {
+                labels: ['صيانة دورية', 'إصلاح طارئ', 'فحص', 'تركيب', 'تحديث'],
+                datasets: [{
+                    data: [45, 25, 15, 10, 5],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // رسم بياني لتوزيع طلبات الصيانة حسب الحالة
+        var statusCtx = document.getElementById('maintenanceStatusChart').getContext('2d');
+        var statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['مكتمل', 'قيد التنفيذ', 'معلق', 'ملغي'],
+                datasets: [{
+                    data: [60, 20, 15, 5],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        'rgba(23, 162, 184, 0.7)',
+                        'rgba(220, 53, 69, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(23, 162, 184, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // رسم بياني لطلبات الصيانة خلال الفترة
+        var trendCtx = document.getElementById('maintenanceTrendChart').getContext('2d');
+        var trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+                datasets: [{
+                    label: 'طلبات الصيانة',
+                    data: [65, 59, 80, 81, 56, 55],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // طباعة التقرير
+        document.getElementById('printReportBtn').addEventListener('click', function() {
+            window.print();
+        });
+        
+        // تصدير التقرير
+        document.getElementById('exportPdf').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('جاري تصدير التقرير بصيغة PDF...');
+        });
+        
+        document.getElementById('exportExcel').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('جاري تصدير التقرير بصيغة Excel...');
+        });
+        
+        document.getElementById('exportCsv').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('جاري تصدير التقرير بصيغة CSV...');
+        });
+        
+        // إنشاء التقرير
+        document.getElementById('generateReportBtn').addEventListener('click', function() {
+            alert('جاري إنشاء التقرير...');
+        });
+    });
+</script>
+{% endblock %}

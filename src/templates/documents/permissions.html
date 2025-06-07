@@ -1,0 +1,156 @@
+{% extends 'layout.html' %}
+
+{% block title %}إدارة صلاحيات المستند{% endblock %}
+
+{% block styles %}
+<style>
+    .permission-card {
+        transition: all 0.3s;
+    }
+    .permission-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .permission-type {
+        width: 100px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">إدارة صلاحيات المستند</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('documents.index') }}">إدارة المستندات</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('documents.view_document', document_id=document.id) }}">{{ document.title }}</a></li>
+        <li class="breadcrumb-item active">إدارة الصلاحيات</li>
+    </ol>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card permission-card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-1"></i>
+                    معلومات المستند
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ document.title }}</h5>
+                    <p class="card-text">{{ document.description }}</p>
+                    <p class="card-text">
+                        <strong>نوع الملف:</strong> {{ document.file_type }}<br>
+                        <strong>تاريخ الرفع:</strong> {{ document.upload_date.strftime('%Y-%m-%d') }}<br>
+                        <strong>المستخدم:</strong> {{ document.user.full_name }}
+                    </p>
+                    <a href="{{ url_for('documents.view_document', document_id=document.id) }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-right me-1"></i> العودة إلى المستند
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card permission-card">
+                <div class="card-header">
+                    <i class="fas fa-plus-circle me-1"></i>
+                    إضافة صلاحية جديدة
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('documents.add_permission', document_id=document.id) }}" method="POST">
+                        <div class="mb-3">
+                            <label for="user_id" class="form-label">المستخدم</label>
+                            <select class="form-select" id="user_id" name="user_id" required>
+                                <option value="">اختر المستخدم...</option>
+                                {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="permission_type" class="form-label">نوع الصلاحية</label>
+                            <select class="form-select" id="permission_type" name="permission_type" required>
+                                <option value="">اختر نوع الصلاحية...</option>
+                                <option value="read">قراءة</option>
+                                <option value="write">تعديل</option>
+                                <option value="delete">حذف</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus me-1"></i> إضافة صلاحية
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-key me-1"></i>
+            الصلاحيات الحالية
+        </div>
+        <div class="card-body">
+            {% if permissions %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>المستخدم</th>
+                            <th>نوع الصلاحية</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for permission in permissions %}
+                        <tr>
+                            <td>{{ permission.user.full_name }}</td>
+                            <td>
+                                <span class="badge permission-type
+                                    {% if permission.permission_type == 'read' %}bg-info{% endif %}
+                                    {% if permission.permission_type == 'write' %}bg-warning{% endif %}
+                                    {% if permission.permission_type == 'delete' %}bg-danger{% endif %}
+                                ">
+                                    {% if permission.permission_type == 'read' %}قراءة{% endif %}
+                                    {% if permission.permission_type == 'write' %}تعديل{% endif %}
+                                    {% if permission.permission_type == 'delete' %}حذف{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('documents.delete_permission', document_id=document.id, permission_id=permission.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذه الصلاحية؟')">
+                                        <i class="fas fa-trash me-1"></i> حذف
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                لا توجد صلاحيات محددة لهذا المستند. المستند متاح فقط للمدراء ومالك المستند.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-info-circle me-1"></i>
+            معلومات حول الصلاحيات
+        </div>
+        <div class="card-body">
+            <div class="alert alert-primary">
+                <h5>أنواع الصلاحيات:</h5>
+                <ul>
+                    <li><strong>قراءة:</strong> تسمح للمستخدم بعرض وتحميل المستند.</li>
+                    <li><strong>تعديل:</strong> تسمح للمستخدم بتعديل معلومات المستند وتحديث الملف.</li>
+                    <li><strong>حذف:</strong> تسمح للمستخدم بحذف المستند.</li>
+                </ul>
+                <p>ملاحظة: المدراء ومالك المستند لديهم جميع الصلاحيات تلقائياً.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

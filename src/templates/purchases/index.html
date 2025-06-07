@@ -1,0 +1,235 @@
+{% extends 'layout.html' %}
+
+{% block title %}قسم المشتريات{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">قسم المشتريات</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item active">المشتريات</li>
+    </ol>
+    
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4>{{ stats.suppliers_count }}</h4>
+                            <div>الموردين</div>
+                        </div>
+                        <div>
+                            <i class="fas fa-users fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('purchases.suppliers') }}">عرض التفاصيل</a>
+                    <div class="small text-white"><i class="fas fa-angle-left"></i></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4>{{ stats.orders_count }}</h4>
+                            <div>أوامر الشراء</div>
+                        </div>
+                        <div>
+                            <i class="fas fa-file-invoice fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('purchases.purchase_orders') }}">عرض التفاصيل</a>
+                    <div class="small text-white"><i class="fas fa-angle-left"></i></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4>{{ stats.pending_orders }}</h4>
+                            <div>طلبات قيد الانتظار</div>
+                        </div>
+                        <div>
+                            <i class="fas fa-clock fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('purchases.purchase_orders') }}">عرض التفاصيل</a>
+                    <div class="small text-white"><i class="fas fa-angle-left"></i></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4>{{ stats.total_amount }} ريال</h4>
+                            <div>إجمالي المشتريات</div>
+                        </div>
+                        <div>
+                            <i class="fas fa-money-bill-wave fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{{ url_for('purchases.purchase_reports') }}">عرض التقارير</a>
+                    <div class="small text-white"><i class="fas fa-angle-left"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar me-1"></i>
+                    المشتريات الشهرية
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyPurchasesChart" width="100%" height="40"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-pie me-1"></i>
+                    توزيع المشتريات حسب المورد
+                </div>
+                <div class="card-body">
+                    <canvas id="supplierDistributionChart" width="100%" height="40"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            أحدث أوامر الشراء
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>رقم الأمر</th>
+                            <th>المورد</th>
+                            <th>تاريخ الطلب</th>
+                            <th>المبلغ الإجمالي</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td>{{ order.order_number }}</td>
+                            <td>{{ order.supplier.name }}</td>
+                            <td>{{ order.order_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ order.final_amount }} ريال</td>
+                            <td>
+                                {% if order.status == 'draft' %}
+                                <span class="badge bg-secondary">مسودة</span>
+                                {% elif order.status == 'approved' %}
+                                <span class="badge bg-info">معتمد</span>
+                                {% elif order.status == 'sent' %}
+                                <span class="badge bg-primary">مرسل</span>
+                                {% elif order.status == 'received' %}
+                                <span class="badge bg-success">مستلم</span>
+                                {% elif order.status == 'cancelled' %}
+                                <span class="badge bg-danger">ملغي</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('purchases.view_purchase_order', order_id=order.id) }}" class="btn btn-info btn-sm">عرض</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">لا توجد أوامر شراء بعد</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // بيانات الرسم البياني للمشتريات الشهرية
+        var monthlyData = {
+            labels: {{ monthly_data.labels|tojson }},
+            datasets: [{
+                label: 'المشتريات الشهرية (ريال)',
+                backgroundColor: 'rgba(2, 117, 216, 0.2)',
+                borderColor: 'rgba(2, 117, 216, 1)',
+                borderWidth: 1,
+                data: {{ monthly_data.values|tojson }},
+            }]
+        };
+        
+        // بيانات الرسم البياني لتوزيع المشتريات حسب المورد
+        var supplierData = {
+            labels: {{ supplier_data.labels|tojson }},
+            datasets: [{
+                label: 'توزيع المشتريات حسب المورد',
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)'
+                ],
+                data: {{ supplier_data.values|tojson }},
+            }]
+        };
+        
+        // إنشاء الرسم البياني للمشتريات الشهرية
+        var monthlyCtx = document.getElementById('monthlyPurchasesChart').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'bar',
+            data: monthlyData,
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // إنشاء الرسم البياني لتوزيع المشتريات حسب المورد
+        var supplierCtx = document.getElementById('supplierDistributionChart').getContext('2d');
+        new Chart(supplierCtx, {
+            type: 'pie',
+            data: supplierData,
+            options: {
+                responsive: true
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'layout.html' %}
+
+{% block title %}طباعة إيصال{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <button onclick="window.print();" class="btn btn-primary no-print">
+                <i class="fas fa-print"></i> طباعة
+            </button>
+            <a href="{{ url_for('financial.view_receipt', receipt_id=receipt.id) }}" class="btn btn-secondary no-print">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+        </div>
+    </div>
+    
+    <div class="card mb-4 print-document">
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-6">
+                    <img src="{{ url_for('static', filename='assets/img/logo.png') }}" alt="شعار الشركة" style="max-height: 100px;">
+                </div>
+                <div class="col-6 text-end">
+                    <h2>إيصال استلام</h2>
+                    <p><strong>رقم الإيصال:</strong> {{ receipt.receipt_number }}</p>
+                    <p><strong>التاريخ:</strong> {{ receipt.date.strftime('%Y-%m-%d') }}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <h4>استلمنا من السيد/ة: {{ receipt.client_name }}</h4>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>المبلغ (رقماً):</th>
+                            <td>{{ receipt.amount }} ريال</td>
+                        </tr>
+                        <tr>
+                            <th>المبلغ (كتابةً):</th>
+                            <td>{{ receipt.amount_in_words }} ريال فقط لا غير</td>
+                        </tr>
+                        <tr>
+                            <th>طريقة الدفع:</th>
+                            <td>{{ receipt.payment_method }}</td>
+                        </tr>
+                        <tr>
+                            <th>وذلك عن:</th>
+                            <td>{{ receipt.description }}</td>
+                        </tr>
+                        {% if receipt.contract %}
+                        <tr>
+                            <th>رقم العقد:</th>
+                            <td>{{ receipt.contract.contract_number }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if receipt.reference_number %}
+                        <tr>
+                            <th>رقم المرجع:</th>
+                            <td>{{ receipt.reference_number }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>ملاحظات:</h5>
+                    <p>{{ receipt.notes or 'لا توجد ملاحظات' }}</p>
+                </div>
+            </div>
+            
+            <div class="row mt-5 signature-stamp-section">
+                <div class="col-4 signature-section">
+                    <h5>المستلم:</h5>
+                    <div class="signature-line">
+                        <p>{{ receipt.received_by }}</p>
+                    </div>
+                </div>
+                <div class="col-4 stamp-section">
+                    <div class="company-stamp">
+                        <img src="{{ url_for('static', filename='images/company_stamp.png') }}" alt="ختم الشركة">
+                    </div>
+                </div>
+                <div class="col-4 signature-section">
+                    <h5>توقيع العميل:</h5>
+                    <div class="signature-line">
+                        <p>الاسم والتوقيع</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/stamp_styles.css') }}">
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        .print-document {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container-fluid {
+            width: 100%;
+            padding: 0;
+        }
+        
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+    }
+</style>
+{% endblock %}

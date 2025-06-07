@@ -1,0 +1,165 @@
+{% extends 'layout.html' %}
+
+{% block title %}إدارة المستندات{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+<style>
+    .document-card {
+        transition: all 0.3s;
+        height: 100%;
+    }
+    .document-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .document-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    .filter-section {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+    }
+    .tag-badge {
+        margin-right: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+    .select2-container--bootstrap-5 .select2-selection {
+        height: auto;
+        min-height: 38px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">إدارة المستندات</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item active">إدارة المستندات</li>
+    </ol>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <a href="{{ url_for('documents.add_document') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> إضافة مستند جديد
+            </a>
+            <a href="{{ url_for('documents.categories') }}" class="btn btn-secondary">
+                <i class="fas fa-folder me-1"></i> إدارة التصنيفات
+            </a>
+            <a href="{{ url_for('documents.tags') }}" class="btn btn-secondary">
+                <i class="fas fa-tags me-1"></i> إدارة الوسوم
+            </a>
+        </div>
+        <div class="col-md-6">
+            <form action="{{ url_for('documents.index') }}" method="GET" class="d-flex">
+                <input type="text" name="q" class="form-control me-2" placeholder="بحث..." value="{{ search_query }}">
+                <button type="submit" class="btn btn-outline-primary">بحث</button>
+                <a href="{{ url_for('documents.search') }}" class="btn btn-link">بحث متقدم</a>
+            </form>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="filter-section">
+                <h5>تصفية حسب التصنيف</h5>
+                <div class="list-group">
+                    <a href="{{ url_for('documents.index') }}" class="list-group-item list-group-item-action {% if not selected_category_id %}active{% endif %}">
+                        الكل
+                    </a>
+                    {% for category in categories %}
+                    <a href="{{ url_for('documents.index', category_id=category.id) }}" class="list-group-item list-group-item-action {% if selected_category_id == category.id %}active{% endif %}">
+                        {{ category.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+                
+                <h5 class="mt-4">تصفية حسب الوسم</h5>
+                <div class="list-group">
+                    <a href="{{ url_for('documents.index') }}" class="list-group-item list-group-item-action {% if not selected_tag_id %}active{% endif %}">
+                        الكل
+                    </a>
+                    {% for tag in tags %}
+                    <a href="{{ url_for('documents.index', tag_id=tag.id) }}" class="list-group-item list-group-item-action {% if selected_tag_id == tag.id %}active{% endif %}">
+                        {{ tag.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            {% if documents %}
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for document in documents %}
+                <div class="col">
+                    <div class="card document-card">
+                        <div class="card-body text-center">
+                            <div class="document-icon">
+                                {% if document.file_type in ['pdf'] %}
+                                <i class="far fa-file-pdf text-danger"></i>
+                                {% elif document.file_type in ['doc', 'docx'] %}
+                                <i class="far fa-file-word text-primary"></i>
+                                {% elif document.file_type in ['xls', 'xlsx'] %}
+                                <i class="far fa-file-excel text-success"></i>
+                                {% elif document.file_type in ['ppt', 'pptx'] %}
+                                <i class="far fa-file-powerpoint text-warning"></i>
+                                {% elif document.file_type in ['jpg', 'jpeg', 'png', 'gif'] %}
+                                <i class="far fa-file-image text-info"></i>
+                                {% else %}
+                                <i class="far fa-file text-secondary"></i>
+                                {% endif %}
+                            </div>
+                            <h5 class="card-title">{{ document.title }}</h5>
+                            <p class="card-text small text-muted">{{ document.description|truncate(50) }}</p>
+                            <div class="mb-2">
+                                {% for category in document.categories %}
+                                <span class="badge bg-secondary">{{ category.name }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {% for tag in document.tags %}
+                                <span class="badge bg-info tag-badge">{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                            <p class="card-text small">
+                                <i class="far fa-calendar-alt"></i> {{ document.upload_date.strftime('%Y-%m-%d') }}<br>
+                                <i class="far fa-user"></i> {{ document.user.full_name }}
+                            </p>
+                            <div class="btn-group w-100">
+                                <a href="{{ url_for('documents.view_document', document_id=document.id) }}" class="btn btn-sm btn-outline-primary">عرض</a>
+                                <a href="{{ url_for('documents.download_document', document_id=document.id) }}" class="btn btn-sm btn-outline-success">تحميل</a>
+                                <a href="{{ url_for('documents.edit_document', document_id=document.id) }}" class="btn btn-sm btn-outline-secondary">تعديل</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                لا توجد مستندات متاحة. <a href="{{ url_for('documents.add_document') }}">إضافة مستند جديد</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // تهيئة Select2 للقوائم المنسدلة
+        $('.select2').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'اختر...',
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'layout.html' %}
+
+{% block title %}أوامر الشراء{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">إدارة أوامر الشراء</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item active">أوامر الشراء</li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            قائمة أوامر الشراء
+            <a href="{{ url_for('purchases.add_purchase_order') }}" class="btn btn-primary btn-sm float-end">إضافة أمر شراء جديد</a>
+        </div>
+        <div class="card-body">
+            <table id="datatablesSimple" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>رقم الأمر</th>
+                        <th>المورد</th>
+                        <th>تاريخ الطلب</th>
+                        <th>تاريخ التسليم المتوقع</th>
+                        <th>المبلغ الإجمالي</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>{{ order.order_number }}</td>
+                        <td>{{ order.supplier.name }}</td>
+                        <td>{{ order.order_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ order.expected_delivery_date.strftime('%Y-%m-%d') if order.expected_delivery_date else 'غير محدد' }}</td>
+                        <td>{{ order.final_amount }} ريال</td>
+                        <td>
+                            {% if order.status == 'draft' %}
+                            <span class="badge bg-secondary">مسودة</span>
+                            {% elif order.status == 'approved' %}
+                            <span class="badge bg-info">معتمد</span>
+                            {% elif order.status == 'sent' %}
+                            <span class="badge bg-primary">مرسل</span>
+                            {% elif order.status == 'received' %}
+                            <span class="badge bg-success">مستلم</span>
+                            {% elif order.status == 'cancelled' %}
+                            <span class="badge bg-danger">ملغي</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('purchases.view_purchase_order', order_id=order.id) }}" class="btn btn-info btn-sm">عرض</a>
+                            {% if order.status == 'draft' %}
+                            <a href="{{ url_for('purchases.edit_purchase_order', order_id=order.id) }}" class="btn btn-primary btn-sm">تعديل</a>
+                            {% endif %}
+                            <a href="{{ url_for('purchases.print_purchase_order', order_id=order.id) }}" class="btn btn-secondary btn-sm" target="_blank">طباعة</a>
+                            
+                            <!-- إضافة أزرار لإرسال أمر الشراء عبر البريد الإلكتروني والواتساب -->
+                            <a href="{{ url_for('messaging.send_contract_email', contract_id=order.id) }}" class="btn btn-success btn-sm">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="{{ url_for('messaging.send_contract_whatsapp', contract_id=order.id) }}" class="btn btn-success btn-sm">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#datatablesSimple').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Arabic.json'
+            }
+        });
+    });
+</script>
+{% endblock %}

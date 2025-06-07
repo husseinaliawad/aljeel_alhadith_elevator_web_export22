@@ -1,0 +1,242 @@
+"""
+ملف CSS مخصص لتطبيق aljeel alhadith elevator
+"""
+
+/* متغيرات الألوان */
+:root {
+    --primary: #0d6efd;
+    --secondary: #6c757d;
+    --success: #198754;
+    --info: #0dcaf0;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #212529;
+}
+
+/* إعدادات عامة */
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    min-height: 100vh;
+}
+
+/* الشريط الجانبي */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.sidebar-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.sidebar-logo {
+    max-width: 80px;
+    margin-bottom: 10px;
+}
+
+.sidebar-menu {
+    padding: 15px 0;
+}
+
+.sidebar-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu li {
+    margin-bottom: 5px;
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #555;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu a:hover {
+    background-color: #f8f9fa;
+    color: var(--primary);
+}
+
+.sidebar-menu a.active {
+    background-color: #e9f0ff;
+    color: var(--primary);
+    border-right: 3px solid var(--primary);
+}
+
+.sidebar-menu i {
+    margin-left: 10px;
+    font-size: 18px;
+    width: 25px;
+    text-align: center;
+}
+
+.sidebar-divider {
+    padding: 10px 20px;
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    margin-top: 15px;
+}
+
+/* المحتوى الرئيسي */
+.main-content {
+    margin-right: 250px;
+    transition: all 0.3s ease;
+}
+
+/* شريط التنقل العلوي */
+.navbar {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #555;
+}
+
+/* بطاقات الإحصائيات */
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 15px;
+    color: #fff;
+    font-size: 24px;
+}
+
+.stat-card-info h5 {
+    margin: 0;
+    font-size: 14px;
+    color: #777;
+}
+
+.stat-card-info h3 {
+    margin: 5px 0 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* بطاقات عامة */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600;
+}
+
+/* الجداول */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    border-top: none;
+}
+
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.clickable-row:hover {
+    background-color: #f8f9fa;
+}
+
+/* نموذج تسجيل الدخول */
+.login-card {
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* الأزرار */
+.btn {
+    border-radius: 5px;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+/* التنبيهات */
+.alert {
+    border-radius: 8px;
+}
+
+/* التوافق مع الأجهزة المحمولة */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(100%);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-right: 0;
+    }
+    
+    .sidebar-toggle {
+        display: block;
+    }
+}
+
+/* الطباعة */
+@media print {
+    .sidebar, .navbar {
+        display: none;
+    }
+    
+    .main-content {
+        margin: 0;
+        padding: 0;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}

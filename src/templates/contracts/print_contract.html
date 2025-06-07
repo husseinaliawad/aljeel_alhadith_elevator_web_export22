@@ -1,0 +1,204 @@
+{% extends 'layout.html' %}
+
+{% block title %}طباعة عقد{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <button onclick="window.print();" class="btn btn-primary no-print">
+                <i class="fas fa-print"></i> طباعة
+            </button>
+            <a href="{{ url_for('contracts.view_contract', contract_id=contract.id) }}" class="btn btn-secondary no-print">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+        </div>
+    </div>
+    
+    <div class="card mb-4 print-document">
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-6">
+                    <img src="{{ url_for('static', filename='assets/img/logo.png') }}" alt="شعار الشركة" style="max-height: 100px;">
+                </div>
+                <div class="col-6 text-end">
+                    <h2>عقد {{ contract.contract_type_str }}</h2>
+                    <p><strong>رقم العقد:</strong> {{ contract.contract_number }}</p>
+                    <p><strong>التاريخ:</strong> {{ contract.start_date.strftime('%Y-%m-%d') }}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-6">
+                    <h5>الطرف الأول:</h5>
+                    <p><strong>الجيل الحديث للأمن والمصاعد</strong></p>
+                    <p>العنوان: المملكة العربية السعودية</p>
+                    <p>الهاتف: +966 XXXXXXXXX</p>
+                    <p>البريد الإلكتروني: info@aljeelalhadith.com</p>
+                </div>
+                <div class="col-6">
+                    <h5>الطرف الثاني:</h5>
+                    <p><strong>{{ contract.client_name }}</strong></p>
+                    <p>العنوان: {{ contract.client_address }}</p>
+                    <p>الهاتف: {{ contract.client_phone }}</p>
+                    <p>البريد الإلكتروني: {{ contract.client_email }}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>تفاصيل العقد:</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>نوع العقد</th>
+                            <td>{{ contract.contract_type_str }}</td>
+                        </tr>
+                        <tr>
+                            <th>تاريخ البدء</th>
+                            <td>{{ contract.start_date.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        <tr>
+                            <th>تاريخ الانتهاء</th>
+                            <td>{{ contract.end_date.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        <tr>
+                            <th>المدة</th>
+                            <td>{{ contract.duration }} شهر</td>
+                        </tr>
+                        <tr>
+                            <th>القيمة الإجمالية</th>
+                            <td>{{ contract.total_amount }} ريال</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>المصاعد المشمولة في العقد:</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>رقم المصعد</th>
+                                <th>الموقع</th>
+                                <th>النوع</th>
+                                <th>الطاقة الاستيعابية</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for elevator in contract.elevators %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ elevator.elevator_number }}</td>
+                                <td>{{ elevator.location }}</td>
+                                <td>{{ elevator.type }}</td>
+                                <td>{{ elevator.capacity }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>شروط وأحكام العقد:</h5>
+                    <ol>
+                        <li>يلتزم الطرف الأول بتقديم خدمات الصيانة الدورية للمصاعد المذكورة أعلاه.</li>
+                        <li>يتم إجراء الصيانة الدورية مرة كل شهر.</li>
+                        <li>يلتزم الطرف الأول بالاستجابة لطلبات الصيانة الطارئة خلال 24 ساعة.</li>
+                        <li>يلتزم الطرف الثاني بسداد قيمة العقد وفقاً لجدول الدفعات المتفق عليه.</li>
+                        <li>لا يشمل العقد استبدال قطع الغيار الرئيسية.</li>
+                        <li>يمكن تجديد العقد تلقائياً بموافقة الطرفين.</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>جدول الدفعات:</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>الدفعة</th>
+                                <th>التاريخ</th>
+                                <th>المبلغ</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in contract.payments %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ payment.due_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ payment.amount }} ريال</td>
+                                <td>{{ payment.status_str }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>ملاحظات:</h5>
+                    <p>{{ contract.notes or 'لا توجد ملاحظات' }}</p>
+                </div>
+            </div>
+            
+            <div class="row mt-5 signature-stamp-section">
+                <div class="col-4 signature-section">
+                    <h5>توقيع الطرف الأول:</h5>
+                    <div class="signature-line">
+                        <p>الاسم والتوقيع</p>
+                    </div>
+                </div>
+                <div class="col-4 stamp-section">
+                    <div class="company-stamp">
+                        <img src="{{ url_for('static', filename='images/company_stamp.png') }}" alt="ختم الشركة">
+                    </div>
+                </div>
+                <div class="col-4 signature-section">
+                    <h5>توقيع الطرف الثاني:</h5>
+                    <div class="signature-line">
+                        <p>الاسم والتوقيع</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/stamp_styles.css') }}">
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        .print-document {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container-fluid {
+            width: 100%;
+            padding: 0;
+        }
+        
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+    }
+</style>
+{% endblock %}

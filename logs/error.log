@@ -1,0 +1,67 @@
+[2025-06-04 03:14:17 -0400] [41285] [INFO] Starting gunicorn 20.1.0
+[2025-06-04 03:14:17 -0400] [41285] [INFO] Listening at: http://0.0.0.0:5000 (41285)
+[2025-06-04 03:14:17 -0400] [41285] [INFO] Using worker: sync
+[2025-06-04 03:14:17 -0400] [41286] [INFO] Booting worker with pid: 41286
+[2025-06-04 03:14:17 -0400] [41287] [INFO] Booting worker with pid: 41287
+[2025-06-04 03:14:17 -0400] [41288] [INFO] Booting worker with pid: 41288
+[2025-06-04 03:14:17 -0400] [41289] [INFO] Booting worker with pid: 41289
+[2025-06-04 03:14:17 -0400] [41290] [INFO] Booting worker with pid: 41290
+[2025-06-04 03:14:17 -0400] [41291] [INFO] Booting worker with pid: 41291
+[2025-06-04 03:14:17 -0400] [41292] [INFO] Booting worker with pid: 41292
+[2025-06-04 03:14:18 -0400] [41293] [INFO] Booting worker with pid: 41293
+[2025-06-04 03:14:18 -0400] [41294] [INFO] Booting worker with pid: 41294
+[2025-06-04 08:11:09 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:41286)
+[2025-06-04 08:11:10 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:41287)
+[2025-06-04 08:11:10 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:41288)
+[2025-06-04 08:11:10 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:41289)
+[2025-06-04 08:11:10 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:41290)
+[2025-06-04 08:11:10 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:41291)
+[2025-06-04 08:11:10 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:41292)
+[2025-06-04 08:11:10 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:41293)
+[2025-06-04 08:11:10 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:41294)
+[2025-06-04 08:11:11 -0400] [41285] [WARNING] Worker with pid 41286 was terminated due to signal 9
+[2025-06-04 08:11:11 -0400] [41285] [WARNING] Worker with pid 41287 was terminated due to signal 9
+[2025-06-04 08:11:11 -0400] [41285] [WARNING] Worker with pid 41288 was terminated due to signal 9
+[2025-06-04 08:11:11 -0400] [41285] [WARNING] Worker with pid 41289 was terminated due to signal 9
+[2025-06-04 08:11:11 -0400] [41285] [WARNING] Worker with pid 41290 was terminated due to signal 9
+[2025-06-04 08:11:11 -0400] [41285] [WARNING] Worker with pid 41292 was terminated due to signal 9
+[2025-06-04 08:11:11 -0400] [41285] [WARNING] Worker with pid 41293 was terminated due to signal 9
+[2025-06-04 08:11:11 -0400] [41285] [WARNING] Worker with pid 41294 was terminated due to signal 9
+[2025-06-04 08:11:11 -0400] [41285] [WARNING] Worker with pid 41291 was terminated due to signal 9
+[2025-06-04 08:11:11 -0400] [47489] [INFO] Booting worker with pid: 47489
+[2025-06-04 08:11:12 -0400] [47491] [INFO] Booting worker with pid: 47491
+[2025-06-04 08:11:12 -0400] [47490] [INFO] Booting worker with pid: 47490
+[2025-06-04 08:11:12 -0400] [47492] [INFO] Booting worker with pid: 47492
+[2025-06-04 08:11:12 -0400] [47493] [INFO] Booting worker with pid: 47493
+[2025-06-04 08:11:12 -0400] [47494] [INFO] Booting worker with pid: 47494
+[2025-06-04 08:11:12 -0400] [47495] [INFO] Booting worker with pid: 47495
+[2025-06-04 08:11:12 -0400] [47496] [INFO] Booting worker with pid: 47496
+[2025-06-04 08:11:12 -0400] [47497] [INFO] Booting worker with pid: 47497
+[2025-06-04 08:37:41 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:47490)
+[2025-06-04 08:37:41 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:47491)
+[2025-06-04 08:37:41 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:47492)
+[2025-06-04 08:37:41 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:47493)
+[2025-06-04 08:37:41 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:47494)
+[2025-06-04 08:37:41 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:47495)
+[2025-06-04 08:37:41 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:47496)
+[2025-06-04 08:37:41 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:47497)
+[2025-06-04 08:37:41 -0400] [47495] [INFO] Worker exiting (pid: 47495)
+[2025-06-04 08:37:41 -0400] [47493] [INFO] Worker exiting (pid: 47493)
+[2025-06-04 08:37:42 -0400] [47497] [INFO] Worker exiting (pid: 47497)
+[2025-06-04 08:37:42 -0400] [47496] [INFO] Worker exiting (pid: 47496)
+[2025-06-04 08:37:42 -0400] [47491] [INFO] Worker exiting (pid: 47491)
+[2025-06-04 08:37:42 -0400] [47494] [INFO] Worker exiting (pid: 47494)
+[2025-06-04 08:37:42 -0400] [47490] [INFO] Worker exiting (pid: 47490)
+[2025-06-04 08:37:42 -0400] [47492] [INFO] Worker exiting (pid: 47492)
+[2025-06-04 08:37:42 -0400] [41285] [CRITICAL] WORKER TIMEOUT (pid:47489)
+[2025-06-04 08:37:42 -0400] [47489] [INFO] Worker exiting (pid: 47489)
+[2025-06-04 08:37:42 -0400] [41285] [WARNING] Worker with pid 47496 was terminated due to signal 9
+[2025-06-04 08:37:42 -0400] [48643] [INFO] Booting worker with pid: 48643
+[2025-06-04 08:37:42 -0400] [48645] [INFO] Booting worker with pid: 48645
+[2025-06-04 08:37:42 -0400] [48646] [INFO] Booting worker with pid: 48646
+[2025-06-04 08:37:42 -0400] [48647] [INFO] Booting worker with pid: 48647
+[2025-06-04 08:37:42 -0400] [48648] [INFO] Booting worker with pid: 48648
+[2025-06-04 08:37:42 -0400] [48649] [INFO] Booting worker with pid: 48649
+[2025-06-04 08:37:42 -0400] [48650] [INFO] Booting worker with pid: 48650
+[2025-06-04 08:37:43 -0400] [48651] [INFO] Booting worker with pid: 48651
+[2025-06-04 08:37:43 -0400] [48652] [INFO] Booting worker with pid: 48652

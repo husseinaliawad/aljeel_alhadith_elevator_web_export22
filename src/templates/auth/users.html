@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block title %}المستخدمين - برنامج الجيل الحديث للمصاعد{% endblock %}
+
+{% block main_content %}
+<div class="users-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">إدارة المستخدمين</h2>
+        <a href="{{ url_for('auth.add_user') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-1"></i> إضافة مستخدم جديد
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control search-input" placeholder="بحث في المستخدمين..." data-target="users-table">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-end">
+                        <div class="dropdown me-2">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter me-1"></i> تصفية
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.users', role='all') }}">جميع المستخدمين</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.users', role='admin') }}">المدراء</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.users', role='technician') }}">الفنيين</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.users', role='sales') }}">المبيعات</a></li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-outline-primary" id="printButton">
+                            <i class="fas fa-print me-1"></i> طباعة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover" id="users-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable">اسم المستخدم</th>
+                            <th class="sortable">الاسم الكامل</th>
+                            <th class="sortable">البريد الإلكتروني</th>
+                            <th class="sortable">الدور</th>
+                            <th class="sortable">آخر تسجيل دخول</th>
+                            <th class="sortable">الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.full_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.role == 'admin' %}
+                                <span class="badge bg-danger">مدير</span>
+                                {% elif user.role == 'technician' %}
+                                <span class="badge bg-primary">فني</span>
+                                {% elif user.role == 'sales' %}
+                                <span class="badge bg-success">مبيعات</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ user.role }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.last_login }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                <span class="badge bg-success">نشط</span>
+                                {% else %}
+                                <span class="badge bg-secondary">غير نشط</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('auth.edit_user', user_id=user.id) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('auth.reset_password', user_id=user.id) }}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="إعادة تعيين كلمة المرور">
+                                        <i class="fas fa-key"></i>
+                                    </a>
+                                    {% if user.is_active %}
+                                    <a href="{{ url_for('auth.deactivate_user', user_id=user.id) }}" class="btn btn-sm btn-secondary" data-bs-toggle="tooltip" title="تعطيل">
+                                        <i class="fas fa-user-slash"></i>
+                                    </a>
+                                    {% else %}
+                                    <a href="{{ url_for('auth.activate_user', user_id=user.id) }}" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="تفعيل">
+                                        <i class="fas fa-user-check"></i>
+                                    </a>
+                                    {% endif %}
+                                    <a href="{{ url_for('auth.delete_user', user_id=user.id) }}" class="btn btn-sm btn-danger btn-delete" data-bs-toggle="tooltip" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if not users %}
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                <h5>لا يوجد مستخدمين مسجلين</h5>
+                <p class="text-muted">قم بإضافة مستخدم جديد للبدء</p>
+                <a href="{{ url_for('auth.add_user') }}" class="btn btn-primary mt-2">
+                    <i class="fas fa-user-plus me-1"></i> إضافة مستخدم جديد
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- إحصائيات المستخدمين -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">توزيع أدوار المستخدمين</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userRolesChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">نشاط المستخدمين</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userActivityChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // رسم بياني لتوزيع أدوار المستخدمين
+        var rolesCtx = document.getElementById('userRolesChart').getContext('2d');
+        var rolesChart = new Chart(rolesCtx, {
+            type: 'pie',
+            data: {
+                labels: ['مدير', 'فني', 'مبيعات', 'أخرى'],
+                datasets: [{
+                    data: {{ roles_data|tojson }},
+                    backgroundColor: [
+                        'rgba(220, 53, 69, 0.7)',
+                        'rgba(13, 110, 253, 0.7)',
+                        'rgba(40, 167, 69, 0.7)',
+                        'rgba(108, 117, 125, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(220, 53, 69, 1)',
+                        'rgba(13, 110, 253, 1)',
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(108, 117, 125, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // رسم بياني لنشاط المستخدمين
+        var activityCtx = document.getElementById('userActivityChart').getContext('2d');
+        var activityChart = new Chart(activityCtx, {
+            type: 'line',
+            data: {
+                labels: {{ activity_labels|tojson }},
+                datasets: [{
+                    label: 'عدد عمليات تسجيل الدخول',
+                    data: {{ activity_data|tojson }},
+                    backgroundColor: 'rgba(13, 202, 240, 0.2)',
+                    borderColor: 'rgba(13, 202, 240, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        
+        // طباعة الجدول
+        document.getElementById('printButton').addEventListener('click', function() {
+            window.print();
+        });
+    });
+</script>
+{% endblock %}

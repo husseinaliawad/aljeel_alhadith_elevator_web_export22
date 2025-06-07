@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الجيل الحديث للأمن والمصاعد</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #0d6efd;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1565799557186-1c394238e93a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+        }
+        .feature-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #0d6efd;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 30px 0;
+        }
+        .social-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">الجيل الحديث للأمن والمصاعد</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">الرئيسية</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#services">خدماتنا</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">من نحن</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">اتصل بنا</a>
+                    </li>
+                </ul>
+                <a href="/dashboard" class="btn btn-light">لوحة التحكم</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-4">الجيل الحديث للأمن والمصاعد</h1>
+            <p class="lead mb-4">نقدم أفضل خدمات تركيب وصيانة المصاعد بأعلى معايير الجودة والأمان</p>
+            <a href="#services" class="btn btn-primary btn-lg">تعرف على خدماتنا</a>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="py-5" id="services">
+        <div class="container">
+            <h2 class="text-center mb-5">خدماتنا</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card feature-card p-4">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <h4 class="card-title">صيانة المصاعد</h4>
+                            <p class="card-text">نقدم خدمات صيانة دورية وطارئة للمصاعد بأحدث التقنيات وأفضل المعايير.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card p-4">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <h4 class="card-title">تركيب المصاعد</h4>
+                            <p class="card-text">نقوم بتركيب جميع أنواع المصاعد للمباني السكنية والتجارية والصناعية.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card p-4">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h4 class="card-title">أنظمة الأمن والسلامة</h4>
+                            <p class="card-text">تركيب وصيانة أنظمة الأمن والسلامة للمصاعد وفق أحدث المعايير العالمية.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="py-5 bg-light" id="about">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="mb-4">من نحن</h2>
+                    <p class="lead">شركة الجيل الحديث للأمن والمصاعد هي شركة رائدة في مجال تركيب وصيانة المصاعد وأنظمة الأمن والسلامة.</p>
+                    <p>تأسست الشركة عام 2010 وتمتلك فريقاً من المهندسين والفنيين ذوي الخبرة العالية. نحن نلتزم بتقديم أفضل الخدمات لعملائنا مع الالتزام بأعلى معايير الجودة والأمان.</p>
+                    <p>نفتخر بثقة عملائنا ونسعى دائماً لتطوير خدماتنا لتلبية احتياجاتهم المتنوعة.</p>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1626250788938-d109f6b8d3e7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" class="img-fluid rounded" alt="فريق العمل">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="py-5" id="contact">
+        <div class="container">
+            <h2 class="text-center mb-5">اتصل بنا</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <form>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">الاسم</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">البريد الإلكتروني</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">رقم الهاتف</label>
+                            <input type="tel" class="form-control" id="phone">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">الرسالة</label>
+                            <textarea class="form-control" id="message" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">إرسال</button>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <div class="card p-4 h-100">
+                        <div class="card-body">
+                            <h4 class="mb-4">معلومات الاتصال</h4>
+                            <p><i class="fas fa-map-marker-alt me-2"></i> العنوان: المملكة العربية السعودية، الرياض</p>
+                            <p><i class="fas fa-phone me-2"></i> الهاتف: +966 12 345 6789</p>
+                            <p><i class="fas fa-envelope me-2"></i> البريد الإلكتروني: info@aljeelalhadith.com</p>
+                            <p><i class="fas fa-clock me-2"></i> ساعات العمل: الأحد - الخميس، 8:00 ص - 5:00 م</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>الجيل الحديث للأمن والمصاعد</h5>
+                    <p>نقدم أفضل خدمات تركيب وصيانة المصاعد وأنظمة الأمن والسلامة.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>روابط سريعة</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white">الرئيسية</a></li>
+                        <li><a href="#services" class="text-white">خدماتنا</a></li>
+                        <li><a href="#about" class="text-white">من نحن</a></li>
+                        <li><a href="#contact" class="text-white">اتصل بنا</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>تواصل معنا</h5>
+                    <div class="mt-3">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4 mb-4 bg-light">
+            <div class="text-center">
+                <p class="mb-0">© 2025 الجيل الحديث للأمن والمصاعد. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

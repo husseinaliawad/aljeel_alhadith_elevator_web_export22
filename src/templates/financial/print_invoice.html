@@ -1,0 +1,167 @@
+{% extends 'layout.html' %}
+
+{% block title %}طباعة فاتورة{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <button onclick="window.print();" class="btn btn-primary no-print">
+                <i class="fas fa-print"></i> طباعة
+            </button>
+            <a href="{{ url_for('financial.view_invoice', invoice_id=invoice.id) }}" class="btn btn-secondary no-print">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+        </div>
+    </div>
+    
+    <div class="card mb-4 print-document">
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-6">
+                    <img src="{{ url_for('static', filename='assets/img/logo.png') }}" alt="شعار الشركة" style="max-height: 100px;">
+                </div>
+                <div class="col-6 text-end">
+                    <h2>فاتورة</h2>
+                    <p><strong>رقم الفاتورة:</strong> {{ invoice.invoice_number }}</p>
+                    <p><strong>التاريخ:</strong> {{ invoice.date.strftime('%Y-%m-%d') }}</p>
+                    <p><strong>تاريخ الاستحقاق:</strong> {{ invoice.due_date.strftime('%Y-%m-%d') }}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-6">
+                    <h5>المرسل:</h5>
+                    <p><strong>الجيل الحديث للأمن والمصاعد</strong></p>
+                    <p>العنوان: المملكة العربية السعودية</p>
+                    <p>الهاتف: +966 XXXXXXXXX</p>
+                    <p>البريد الإلكتروني: info@aljeelalhadith.com</p>
+                    <p>الرقم الضريبي: XXXXXXXXXX</p>
+                </div>
+                <div class="col-6">
+                    <h5>العميل:</h5>
+                    <p><strong>{{ invoice.client_name }}</strong></p>
+                    <p>العنوان: {{ invoice.client_address }}</p>
+                    <p>الهاتف: {{ invoice.client_phone }}</p>
+                    <p>البريد الإلكتروني: {{ invoice.client_email }}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>تفاصيل الفاتورة:</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>الوصف</th>
+                                <th>الكمية</th>
+                                <th>السعر</th>
+                                <th>الإجمالي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in invoice.items %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.price }} ريال</td>
+                                <td>{{ item.total_price }} ريال</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>المجموع:</strong></td>
+                                <td>{{ invoice.subtotal }} ريال</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>الضريبة (15%):</strong></td>
+                                <td>{{ invoice.tax_amount }} ريال</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>الخصم:</strong></td>
+                                <td>{{ invoice.discount_amount }} ريال</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>الإجمالي النهائي:</strong></td>
+                                <td>{{ invoice.total_amount }} ريال</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>طرق الدفع:</h5>
+                    <ul>
+                        <li>تحويل بنكي: بنك الراجحي - رقم الحساب: XXXXXXXXXX</li>
+                        <li>شيك باسم: شركة الجيل الحديث للأمن والمصاعد</li>
+                        <li>نقداً في مقر الشركة</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>ملاحظات:</h5>
+                    <p>{{ invoice.notes or 'لا توجد ملاحظات' }}</p>
+                </div>
+            </div>
+            
+            <div class="row mt-5 signature-stamp-section">
+                <div class="col-4 signature-section">
+                    <h5>إعداد:</h5>
+                    <div class="signature-line">
+                        <p>{{ invoice.prepared_by }}</p>
+                    </div>
+                </div>
+                <div class="col-4 stamp-section">
+                    <div class="company-stamp">
+                        <img src="{{ url_for('static', filename='images/company_stamp.png') }}" alt="ختم الشركة">
+                    </div>
+                </div>
+                <div class="col-4 signature-section">
+                    <h5>اعتماد:</h5>
+                    <div class="signature-line">
+                        <p>المدير المالي</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/stamp_styles.css') }}">
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        .print-document {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container-fluid {
+            width: 100%;
+            padding: 0;
+        }
+        
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+    }
+</style>
+{% endblock %}

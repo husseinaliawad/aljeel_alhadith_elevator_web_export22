@@ -1,0 +1,184 @@
+{% extends 'layout.html' %}
+
+{% block title %}مصروفات العقد{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">مصروفات وتكاليف العقد</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('contracts.index') }}">العقود</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('contracts.view_contract', contract_id=contract.id) }}">{{ contract.contract_number }}</a></li>
+        <li class="breadcrumb-item active">المصروفات والتكاليف</li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-money-bill-wave me-1"></i>
+            ملخص التكاليف والأرباح
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-primary text-white mb-4">
+                        <div class="card-body">
+                            <h5>إجمالي قيمة العقد</h5>
+                            <h3>{{ "{:,.2f}".format(contract.total_amount) }} ريال</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-warning text-white mb-4">
+                        <div class="card-body">
+                            <h5>إجمالي التكاليف</h5>
+                            <h3>{{ "{:,.2f}".format(total_costs) }} ريال</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card {% if profit > 0 %}bg-success{% else %}bg-danger{% endif %} text-white mb-4">
+                        <div class="card-body">
+                            <h5>صافي الربح</h5>
+                            <h3>{{ "{:,.2f}".format(profit) }} ريال</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card {% if profit_percentage > 0 %}bg-success{% else %}bg-danger{% endif %} text-white mb-4">
+                        <div class="card-body">
+                            <h5>نسبة الربح</h5>
+                            <h3>{{ "{:.2f}".format(profit_percentage) }}%</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12 text-center">
+                    <a href="{{ url_for('contract_costs.contract_cost_report', contract_id=contract.id) }}" class="btn btn-primary">
+                        <i class="fas fa-chart-pie me-1"></i> عرض تقرير التكاليف
+                    </a>
+                    <a href="{{ url_for('contract_costs.print_cost_report', contract_id=contract.id) }}" class="btn btn-secondary" target="_blank">
+                        <i class="fas fa-print me-1"></i> طباعة تقرير التكاليف
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-money-bill-alt me-1"></i>
+                    المصروفات المباشرة
+                    <a href="{{ url_for('contract_costs.add_contract_expense', contract_id=contract.id) }}" class="btn btn-primary btn-sm float-end">
+                        <i class="fas fa-plus"></i> إضافة مصروف
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if expenses %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>نوع المصروف</th>
+                                    <th>المبلغ</th>
+                                    <th>الوصف</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for expense in expenses %}
+                                <tr>
+                                    <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ expense.expense_type.name }}</td>
+                                    <td>{{ "{:,.2f}".format(expense.amount) }} ريال</td>
+                                    <td>{{ expense.description }}</td>
+                                    <td>
+                                        <form action="{{ url_for('contract_costs.delete_expense', contract_id=contract.id, expense_id=expense.id) }}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذا المصروف؟')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-active">
+                                    <td colspan="2"><strong>الإجمالي</strong></td>
+                                    <td><strong>{{ "{:,.2f}".format(total_expenses) }} ريال</strong></td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        لا توجد مصروفات مسجلة لهذا العقد.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-shopping-cart me-1"></i>
+                    أوامر الشراء المرتبطة
+                    <a href="{{ url_for('contract_costs.link_purchase_order', contract_id=contract.id) }}" class="btn btn-primary btn-sm float-end">
+                        <i class="fas fa-link"></i> ربط أمر شراء
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if purchase_links %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>رقم أمر الشراء</th>
+                                    <th>المورد</th>
+                                    <th>المبلغ المخصص</th>
+                                    <th>الوصف</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for link in purchase_links %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('purchases.view_purchase_order', purchase_order_id=link.purchase_order.id) }}">
+                                            {{ link.purchase_order.order_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ link.purchase_order.supplier.name }}</td>
+                                    <td>{{ "{:,.2f}".format(link.amount_allocated) }} ريال</td>
+                                    <td>{{ link.description }}</td>
+                                    <td>
+                                        <form action="{{ url_for('contract_costs.delete_purchase_link', contract_id=contract.id, link_id=link.id) }}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذا الربط؟')">
+                                                <i class="fas fa-unlink"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-active">
+                                    <td colspan="2"><strong>الإجمالي</strong></td>
+                                    <td><strong>{{ "{:,.2f}".format(total_purchases) }} ريال</strong></td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        لا توجد أوامر شراء مرتبطة بهذا العقد.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

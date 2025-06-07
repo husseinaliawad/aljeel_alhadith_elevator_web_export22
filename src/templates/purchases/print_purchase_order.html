@@ -1,0 +1,169 @@
+{% extends 'layout.html' %}
+
+{% block title %}طباعة أمر شراء{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <button onclick="window.print();" class="btn btn-primary no-print">
+                <i class="fas fa-print"></i> طباعة
+            </button>
+            <a href="{{ url_for('purchases.view_purchase_order', order_id=order.id) }}" class="btn btn-secondary no-print">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+        </div>
+    </div>
+    
+    <div class="card mb-4 print-document">
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-6">
+                    <img src="{{ url_for('static', filename='assets/img/logo.png') }}" alt="شعار الشركة" style="max-height: 100px;">
+                </div>
+                <div class="col-6 text-end">
+                    <h2>أمر شراء</h2>
+                    <p><strong>رقم أمر الشراء:</strong> {{ order.order_number }}</p>
+                    <p><strong>التاريخ:</strong> {{ order.order_date.strftime('%Y-%m-%d') }}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-6">
+                    <h5>من:</h5>
+                    <p><strong>الجيل الحديث للأمن والمصاعد</strong></p>
+                    <p>العنوان: المملكة العربية السعودية</p>
+                    <p>الهاتف: +966 XXXXXXXXX</p>
+                    <p>البريد الإلكتروني: info@aljeelalhadith.com</p>
+                </div>
+                <div class="col-6">
+                    <h5>إلى:</h5>
+                    <p><strong>{{ order.supplier.name }}</strong></p>
+                    <p>جهة الاتصال: {{ order.supplier.contact_person }}</p>
+                    <p>العنوان: {{ order.supplier.address }}</p>
+                    <p>الهاتف: {{ order.supplier.phone }}</p>
+                    <p>البريد الإلكتروني: {{ order.supplier.email }}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>تفاصيل الطلب:</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>الوصف</th>
+                                <th>الكمية</th>
+                                <th>الوحدة</th>
+                                <th>سعر الوحدة</th>
+                                <th>الإجمالي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.unit }}</td>
+                                <td>{{ item.unit_price }} ريال</td>
+                                <td>{{ item.total_price }} ريال</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" class="text-end"><strong>المجموع:</strong></td>
+                                <td>{{ order.total_amount }} ريال</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="text-end"><strong>الضريبة (15%):</strong></td>
+                                <td>{{ order.tax_amount }} ريال</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="text-end"><strong>الخصم:</strong></td>
+                                <td>{{ order.discount_amount }} ريال</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="text-end"><strong>الإجمالي النهائي:</strong></td>
+                                <td>{{ order.final_amount }} ريال</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>شروط وأحكام:</h5>
+                    <ol>
+                        <li>يرجى ذكر رقم أمر الشراء في جميع المراسلات والفواتير.</li>
+                        <li>يجب أن تكون جميع المنتجات مطابقة للمواصفات المذكورة.</li>
+                        <li>يجب أن يتم التسليم في الموعد المحدد.</li>
+                        <li>تحتفظ الشركة بالحق في رفض أي منتجات غير مطابقة للمواصفات.</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>ملاحظات:</h5>
+                    <p>{{ order.notes or 'لا توجد ملاحظات' }}</p>
+                </div>
+            </div>
+            
+            <div class="row mt-5 signature-stamp-section">
+                <div class="col-4 signature-section">
+                    <h5>توقيع المورد:</h5>
+                    <div class="signature-line">
+                        <p>الاسم والتوقيع</p>
+                    </div>
+                </div>
+                <div class="col-4 stamp-section">
+                    <div class="company-stamp">
+                        <img src="{{ url_for('static', filename='images/company_stamp.png') }}" alt="ختم الشركة">
+                    </div>
+                </div>
+                <div class="col-4 signature-section">
+                    <h5>توقيع المشتري:</h5>
+                    <div class="signature-line">
+                        <p>الاسم والتوقيع</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/stamp_styles.css') }}">
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        .print-document {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container-fluid {
+            width: 100%;
+            padding: 0;
+        }
+        
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+    }
+</style>
+{% endblock %}

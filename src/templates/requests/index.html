@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}طلبات الصيانة - برنامج الجيل الحديث للمصاعد{% endblock %}
+
+{% block main_content %}
+<div class="maintenance-requests-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">إدارة طلبات الصيانة</h2>
+        <a href="{{ url_for('requests.add') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i> إضافة طلب صيانة جديد
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-white p-0">
+            <ul class="nav nav-tabs card-header-tabs" id="requestsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="true">
+                        جميع الطلبات <span class="badge bg-secondary ms-1">{{ all_count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="false">
+                        قيد التنفيذ <span class="badge bg-warning ms-1">{{ pending_count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="false">
+                        مكتملة <span class="badge bg-success ms-1">{{ completed_count }}</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control search-input" placeholder="بحث في طلبات الصيانة..." data-target="requests-table">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-end">
+                        <div class="dropdown me-2">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter me-1"></i> تصفية
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('requests.index', priority='all') }}">جميع الأولويات</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('requests.index', priority='high') }}">أولوية عالية</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('requests.index', priority='medium') }}">أولوية متوسطة</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('requests.index', priority='low') }}">أولوية منخفضة</a></li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-outline-primary" id="printButton">
+                            <i class="fas fa-print me-1"></i> طباعة
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="requestsTabsContent">
+                <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="requests-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable">رقم الطلب</th>
+                                    <th class="sortable">المبنى</th>
+                                    <th class="sortable">رقم المصعد</th>
+                                    <th class="sortable">نوع المشكلة</th>
+                                    <th class="sortable">الأولوية</th>
+                                    <th class="sortable">تاريخ الطلب</th>
+                                    <th class="sortable">الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in requests %}
+                                <tr>
+                                    <td>{{ request.id }}</td>
+                                    <td>{{ request.building_name }}</td>
+                                    <td>{{ request.elevator_number }}</td>
+                                    <td>{{ request.issue_type }}</td>
+                                    <td>
+                                        {% if request.priority == 'عالية' %}
+                                        <span class="badge bg-danger">{{ request.priority }}</span>
+                                        {% elif request.priority == 'متوسطة' %}
+                                        <span class="badge bg-warning">{{ request.priority }}</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{{ request.priority }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ request.request_date }}</td>
+                                    <td>
+                                        {% if request.status == 'جديد' %}
+                                        <span class="badge bg-primary">{{ request.status }}</span>
+                                        {% elif request.status == 'قيد التنفيذ' %}
+                                        <span class="badge bg-warning">{{ request.status }}</span>
+                                        {% elif request.status == 'مكتمل' %}
+                                        <span class="badge bg-success">{{ request.status }}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ request.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('requests.view', request_id=request.id) }}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="عرض التفاصيل">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('requests.edit', request_id=request.id) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="تعديل">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{{ url_for('requests.delete', request_id=request.id) }}" class="btn btn-sm btn-danger btn-delete" data-bs-toggle="tooltip" title="حذف">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if not requests %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+                        <h5>لا توجد طلبات صيانة</h5>
+                        <p class="text-muted">قم بإضافة طلب صيانة جديد للبدء</p>
+                        <a href="{{ url_for('requests.add') }}" class="btn btn-primary mt-2">
+                            <i class="fas fa-plus-circle me-1"></i> إضافة طلب صيانة جديد
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- محتوى التبويبات الأخرى مشابه للتبويب الأول مع تغيير البيانات المعروضة -->
+                <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                    <!-- محتوى مشابه للتبويب الأول لكن مع عرض الطلبات قيد التنفيذ فقط -->
+                </div>
+                
+                <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                    <!-- محتوى مشابه للتبويب الأول لكن مع عرض الطلبات المكتملة فقط -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- إحصائيات طلبات الصيانة -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">إحصائيات طلبات الصيانة</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="requestsStatusChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">توزيع أنواع المشكلات</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="issueTypesChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // رسم بياني لحالة طلبات الصيانة
+        var statusCtx = document.getElementById('requestsStatusChart').getContext('2d');
+        var statusChart = new Chart(statusCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ status_labels|tojson }},
+                datasets: [{
+                    data: {{ status_data|tojson }},
+                    backgroundColor: [
+                        'rgba(13, 110, 253, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        'rgba(40, 167, 69, 0.7)',
+                        'rgba(108, 117, 125, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(13, 110, 253, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(108, 117, 125, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // رسم بياني لأنواع المشكلات
+        var issuesCtx = document.getElementById('issueTypesChart').getContext('2d');
+        var issuesChart = new Chart(issuesCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ issue_labels|tojson }},
+                datasets: [{
+                    label: 'عدد الطلبات',
+                    data: {{ issue_data|tojson }},
+                    backgroundColor: 'rgba(13, 202, 240, 0.7)',
+                    borderColor: 'rgba(13, 202, 240, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        
+        // طباعة الجدول
+        document.getElementById('printButton').addEventListener('click', function() {
+            window.print();
+        });
+    });
+</script>
+{% endblock %}

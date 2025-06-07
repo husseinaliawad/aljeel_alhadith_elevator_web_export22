@@ -1,0 +1,310 @@
+{% extends 'layout.html' %}
+
+{% block title %}البحث المتقدم في المستندات{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+<style>
+    .search-card {
+        transition: all 0.3s;
+    }
+    .search-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .document-card {
+        transition: all 0.3s;
+        height: 100%;
+    }
+    .document-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .document-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    .tag-badge {
+        margin-right: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+    .select2-container--bootstrap-5 .select2-selection {
+        height: auto;
+        min-height: 38px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">البحث المتقدم في المستندات</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('documents.index') }}">إدارة المستندات</a></li>
+        <li class="breadcrumb-item active">البحث المتقدم</li>
+    </ol>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card search-card">
+                <div class="card-header">
+                    <i class="fas fa-search me-1"></i>
+                    معايير البحث
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('documents.search') }}" method="GET" id="searchForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="q" class="form-label">نص البحث</label>
+                                <input type="text" class="form-control" id="q" name="q" placeholder="ابحث في العنوان أو الوصف..." value="{{ query }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="user_id" class="form-label">المستخدم</label>
+                                <select class="form-select select2" id="user_id" name="user_id">
+                                    <option value="">الكل</option>
+                                    {% for user in users %}
+                                    <option value="{{ user.id }}" {% if selected_user_id == user.id %}selected{% endif %}>{{ user.full_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="category_ids" class="form-label">التصنيفات</label>
+                                <select class="form-select select2" id="category_ids" name="category_ids" multiple>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if category.id|string in selected_category_ids %}selected{% endif %}>{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tag_ids" class="form-label">الوسوم</label>
+                                <select class="form-select select2" id="tag_ids" name="tag_ids" multiple>
+                                    {% for tag in tags %}
+                                    <option value="{{ tag.id }}" {% if tag.id|string in selected_tag_ids %}selected{% endif %}>{{ tag.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="start_date" class="form-label">من تاريخ</label>
+                                        <input type="text" class="form-control datepicker" id="start_date" name="start_date" placeholder="اختر التاريخ..." value="{{ start_date }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="end_date" class="form-label">إلى تاريخ</label>
+                                        <input type="text" class="form-control datepicker" id="end_date" name="end_date" placeholder="اختر التاريخ..." value="{{ end_date }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="entity_type" class="form-label">نوع الكيان المرتبط</label>
+                                        <select class="form-select" id="entity_type" name="entity_type">
+                                            <option value="">الكل</option>
+                                            <option value="contract" {% if entity_type == 'contract' %}selected{% endif %}>عقد</option>
+                                            <option value="client" {% if entity_type == 'client' %}selected{% endif %}>عميل</option>
+                                            <option value="project" {% if entity_type == 'project' %}selected{% endif %}>مشروع</option>
+                                            <option value="elevator" {% if entity_type == 'elevator' %}selected{% endif %}>مصعد</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="entity_id" class="form-label">معرف الكيان</label>
+                                        <input type="number" class="form-control" id="entity_id" name="entity_id" placeholder="معرف الكيان..." value="{{ entity_id }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i> بحث
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="resetBtn">
+                                    <i class="fas fa-redo me-1"></i> إعادة تعيين
+                                </button>
+                                <button type="button" class="btn btn-info" id="saveSearchBtn">
+                                    <i class="fas fa-save me-1"></i> حفظ معايير البحث
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-file-alt me-1"></i>
+                    نتائج البحث
+                    <span class="badge bg-primary">{{ documents|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if documents %}
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        {% for document in documents %}
+                        <div class="col">
+                            <div class="card document-card">
+                                <div class="card-body text-center">
+                                    <div class="document-icon">
+                                        {% if document.file_type in ['pdf'] %}
+                                        <i class="far fa-file-pdf text-danger"></i>
+                                        {% elif document.file_type in ['doc', 'docx'] %}
+                                        <i class="far fa-file-word text-primary"></i>
+                                        {% elif document.file_type in ['xls', 'xlsx'] %}
+                                        <i class="far fa-file-excel text-success"></i>
+                                        {% elif document.file_type in ['ppt', 'pptx'] %}
+                                        <i class="far fa-file-powerpoint text-warning"></i>
+                                        {% elif document.file_type in ['jpg', 'jpeg', 'png', 'gif'] %}
+                                        <i class="far fa-file-image text-info"></i>
+                                        {% else %}
+                                        <i class="far fa-file text-secondary"></i>
+                                        {% endif %}
+                                    </div>
+                                    <h5 class="card-title">{{ document.title }}</h5>
+                                    <p class="card-text small text-muted">{{ document.description|truncate(50) }}</p>
+                                    <div class="mb-2">
+                                        {% for category in document.categories %}
+                                        <span class="badge bg-secondary">{{ category.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mb-3">
+                                        {% for tag in document.tags %}
+                                        <span class="badge bg-info tag-badge">{{ tag.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    <p class="card-text small">
+                                        <i class="far fa-calendar-alt"></i> {{ document.upload_date.strftime('%Y-%m-%d') }}<br>
+                                        <i class="far fa-user"></i> {{ document.user.full_name }}
+                                    </p>
+                                    <div class="btn-group w-100">
+                                        <a href="{{ url_for('documents.view_document', document_id=document.id) }}" class="btn btn-sm btn-outline-primary">عرض</a>
+                                        <a href="{{ url_for('documents.download_document', document_id=document.id) }}" class="btn btn-sm btn-outline-success">تحميل</a>
+                                        <a href="{{ url_for('documents.edit_document', document_id=document.id) }}" class="btn btn-sm btn-outline-secondary">تعديل</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        لا توجد نتائج مطابقة لمعايير البحث.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- نموذج حفظ معايير البحث -->
+    <div class="modal fade" id="saveSearchModal" tabindex="-1" aria-labelledby="saveSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="saveSearchModalLabel">حفظ معايير البحث</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="saveSearchForm">
+                        <div class="mb-3">
+                            <label for="searchName" class="form-label">اسم البحث</label>
+                            <input type="text" class="form-control" id="searchName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="searchDescription" class="form-label">وصف البحث</label>
+                            <textarea class="form-control" id="searchDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="confirmSaveSearch">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+<script>
+    $(document).ready(function() {
+        // تهيئة Select2 للقوائم المنسدلة
+        $('.select2').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'اختر...',
+            allowClear: true
+        });
+        
+        // تهيئة منتقي التاريخ
+        flatpickr(".datepicker", {
+            dateFormat: "Y-m-d",
+            locale: "ar",
+            allowInput: true
+        });
+        
+        // إعادة تعيين نموذج البحث
+        $('#resetBtn').click(function() {
+            $('#searchForm')[0].reset();
+            $('.select2').val(null).trigger('change');
+        });
+        
+        // فتح نموذج حفظ معايير البحث
+        $('#saveSearchBtn').click(function() {
+            $('#saveSearchModal').modal('show');
+        });
+        
+        // حفظ معايير البحث
+        $('#confirmSaveSearch').click(function() {
+            const searchName = $('#searchName').val();
+            const searchDescription = $('#searchDescription').val();
+            
+            if (!searchName) {
+                alert('يرجى إدخال اسم البحث');
+                return;
+            }
+            
+            // جمع معايير البحث
+            const searchCriteria = {
+                query: $('#q').val(),
+                user_id: $('#user_id').val(),
+                category_ids: $('#category_ids').val(),
+                tag_ids: $('#tag_ids').val(),
+                start_date: $('#start_date').val(),
+                end_date: $('#end_date').val(),
+                entity_type: $('#entity_type').val(),
+                entity_id: $('#entity_id').val()
+            };
+            
+            // حفظ معايير البحث في التخزين المحلي
+            const savedSearches = JSON.parse(localStorage.getItem('savedSearches') || '[]');
+            savedSearches.push({
+                name: searchName,
+                description: searchDescription,
+                criteria: searchCriteria,
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('savedSearches', JSON.stringify(savedSearches));
+            
+            // إغلاق النموذج وعرض رسالة نجاح
+            $('#saveSearchModal').modal('hide');
+            alert('تم حفظ معايير البحث بنجاح');
+        });
+    });
+</script>
+{% endblock %}

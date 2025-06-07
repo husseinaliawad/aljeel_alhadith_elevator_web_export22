@@ -1,0 +1,214 @@
+{% extends 'layout.html' %}
+
+{% block title %}عرض أمر شراء{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">عرض أمر شراء</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('purchases.purchase_orders') }}">أوامر الشراء</a></li>
+        <li class="breadcrumb-item active">عرض أمر شراء #{{ order.order_number }}</li>
+    </ol>
+    
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-file-invoice me-1"></i>
+                        بيانات أمر الشراء
+                    </div>
+                    <div>
+                        <a href="{{ url_for('purchases.print_purchase_order', order_id=order.id) }}" class="btn btn-sm btn-secondary" target="_blank">
+                            <i class="fas fa-print"></i> طباعة
+                        </a>
+                        {% if order.status == 'draft' %}
+                        <a href="{{ url_for('purchases.edit_purchase_order', order_id=order.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i> تعديل
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>رقم أمر الشراء:</strong> {{ order.order_number }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>الحالة:</strong> 
+                                {% if order.status == 'draft' %}
+                                <span class="badge bg-secondary">مسودة</span>
+                                {% elif order.status == 'approved' %}
+                                <span class="badge bg-info">معتمد</span>
+                                {% elif order.status == 'sent' %}
+                                <span class="badge bg-primary">مرسل</span>
+                                {% elif order.status == 'received' %}
+                                <span class="badge bg-success">مستلم</span>
+                                {% elif order.status == 'cancelled' %}
+                                <span class="badge bg-danger">ملغي</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>المورد:</strong> {{ order.supplier.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>تاريخ الطلب:</strong> {{ order.order_date.strftime('%Y-%m-%d') }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>تاريخ التسليم المتوقع:</strong> {{ order.expected_delivery_date.strftime('%Y-%m-%d') if order.expected_delivery_date else 'غير محدد' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>المستخدم:</strong> {{ order.user.full_name }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p><strong>عنوان التسليم:</strong></p>
+                        <p>{{ order.delivery_address or 'غير محدد' }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p><strong>ملاحظات:</strong></p>
+                        <p>{{ order.notes or 'لا توجد ملاحظات' }}</p>
+                    </div>
+                    
+                    {% if order.status == 'draft' %}
+                    <form action="{{ url_for('purchases.update_purchase_order_status', order_id=order.id) }}" method="post" class="mb-3">
+                        <div class="input-group">
+                            <select class="form-select" name="status">
+                                <option value="approved">اعتماد</option>
+                                <option value="cancelled">إلغاء</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">تحديث الحالة</button>
+                        </div>
+                    </form>
+                    {% elif order.status == 'approved' %}
+                    <form action="{{ url_for('purchases.update_purchase_order_status', order_id=order.id) }}" method="post" class="mb-3">
+                        <div class="input-group">
+                            <select class="form-select" name="status">
+                                <option value="sent">إرسال</option>
+                                <option value="cancelled">إلغاء</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">تحديث الحالة</button>
+                        </div>
+                    </form>
+                    {% elif order.status == 'sent' %}
+                    <div class="alert alert-info">
+                        <p>يمكنك الآن إنشاء استلام لهذا الأمر من خلال:</p>
+                        <a href="{{ url_for('purchases.add_purchase_receive') }}" class="btn btn-info">إنشاء استلام جديد</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-list me-1"></i>
+                    عناصر أمر الشراء
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>الوصف</th>
+                                    <th>الكمية</th>
+                                    <th>سعر الوحدة</th>
+                                    <th>الإجمالي</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>{{ item.description }}</td>
+                                    <td>{{ item.quantity }} {{ item.unit }}</td>
+                                    <td>{{ item.unit_price }} ريال</td>
+                                    <td>{{ item.total_price }} ريال</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">لا توجد عناصر بعد</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-end">المجموع:</th>
+                                    <th>{{ order.total_amount }} ريال</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="3" class="text-end">الضريبة:</th>
+                                    <th>{{ order.tax_amount }} ريال</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="3" class="text-end">الخصم:</th>
+                                    <th>{{ order.discount_amount }} ريال</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="3" class="text-end">الإجمالي النهائي:</th>
+                                    <th>{{ order.final_amount }} ريال</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-truck me-1"></i>
+                    عمليات الاستلام
+                </div>
+                <div class="card-body">
+                    {% if order.receives %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>رقم الاستلام</th>
+                                    <th>تاريخ الاستلام</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for receive in order.receives %}
+                                <tr>
+                                    <td>{{ receive.receive_number }}</td>
+                                    <td>{{ receive.receive_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% if receive.status == 'received' %}
+                                        <span class="badge bg-success">مستلم</span>
+                                        {% elif receive.status == 'partial' %}
+                                        <span class="badge bg-warning">استلام جزئي</span>
+                                        {% elif receive.status == 'rejected' %}
+                                        <span class="badge bg-danger">مرفوض</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('purchases.view_purchase_receive', receive_id=receive.id) }}" class="btn btn-info btn-sm">عرض</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-center">لا توجد عمليات استلام بعد</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

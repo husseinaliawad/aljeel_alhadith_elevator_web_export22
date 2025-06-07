@@ -1,0 +1,168 @@
+{% extends 'layout.html' %}
+
+{% block title %}طباعة عرض سعر{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <button onclick="window.print();" class="btn btn-primary no-print">
+                <i class="fas fa-print"></i> طباعة
+            </button>
+            <a href="{{ url_for('quotes.view_quote', quote_id=quote.id) }}" class="btn btn-secondary no-print">
+                <i class="fas fa-arrow-right"></i> العودة
+            </a>
+        </div>
+    </div>
+    
+    <div class="card mb-4 print-document">
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-6">
+                    <img src="{{ url_for('static', filename='assets/img/logo.png') }}" alt="شعار الشركة" style="max-height: 100px;">
+                </div>
+                <div class="col-6 text-end">
+                    <h2>عرض سعر</h2>
+                    <p><strong>رقم العرض:</strong> {{ quote.quote_number }}</p>
+                    <p><strong>التاريخ:</strong> {{ quote.created_at.strftime('%Y-%m-%d') }}</p>
+                    <p><strong>صالح حتى:</strong> {{ quote.valid_until.strftime('%Y-%m-%d') }}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-6">
+                    <h5>المرسل:</h5>
+                    <p><strong>الجيل الحديث للأمن والمصاعد</strong></p>
+                    <p>العنوان: المملكة العربية السعودية</p>
+                    <p>الهاتف: +966 XXXXXXXXX</p>
+                    <p>البريد الإلكتروني: info@aljeelalhadith.com</p>
+                </div>
+                <div class="col-6">
+                    <h5>العميل:</h5>
+                    <p><strong>{{ quote.client_name }}</strong></p>
+                    <p>العنوان: {{ quote.client_address }}</p>
+                    <p>الهاتف: {{ quote.client_phone }}</p>
+                    <p>البريد الإلكتروني: {{ quote.client_email }}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>تفاصيل العرض:</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>الوصف</th>
+                                <th>الكمية</th>
+                                <th>السعر</th>
+                                <th>الإجمالي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in quote.items %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.price }} ريال</td>
+                                <td>{{ item.total_price }} ريال</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>المجموع:</strong></td>
+                                <td>{{ quote.subtotal }} ريال</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>الضريبة (15%):</strong></td>
+                                <td>{{ quote.tax_amount }} ريال</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>الخصم:</strong></td>
+                                <td>{{ quote.discount_amount }} ريال</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>الإجمالي النهائي:</strong></td>
+                                <td>{{ quote.total_amount }} ريال</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>شروط وأحكام:</h5>
+                    <ol>
+                        <li>هذا العرض صالح لمدة {{ quote.validity_days }} يوم من تاريخ إصداره.</li>
+                        <li>الأسعار المذكورة تشمل ضريبة القيمة المضافة.</li>
+                        <li>يتطلب دفع 50% من القيمة الإجمالية كدفعة مقدمة عند الموافقة على العرض.</li>
+                        <li>يتم دفع المبلغ المتبقي عند اكتمال العمل.</li>
+                        <li>مدة التنفيذ المتوقعة: {{ quote.estimated_days }} يوم عمل.</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5>ملاحظات:</h5>
+                    <p>{{ quote.notes or 'لا توجد ملاحظات' }}</p>
+                </div>
+            </div>
+            
+            <div class="row mt-5 signature-stamp-section">
+                <div class="col-4 signature-section">
+                    <h5>إعداد:</h5>
+                    <div class="signature-line">
+                        <p>{{ quote.prepared_by }}</p>
+                    </div>
+                </div>
+                <div class="col-4 stamp-section">
+                    <div class="company-stamp">
+                        <img src="{{ url_for('static', filename='images/company_stamp.png') }}" alt="ختم الشركة">
+                    </div>
+                </div>
+                <div class="col-4 signature-section">
+                    <h5>اعتماد:</h5>
+                    <div class="signature-line">
+                        <p>المدير العام</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/stamp_styles.css') }}">
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        .print-document {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container-fluid {
+            width: 100%;
+            padding: 0;
+        }
+        
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+    }
+</style>
+{% endblock %}

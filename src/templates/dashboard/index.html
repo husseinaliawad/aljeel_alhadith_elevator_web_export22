@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% block title %}لوحة المعلومات - برنامج الجيل الحديث للمصاعد{% endblock %}
+
+{% block main_content %}
+<div class="dashboard-container">
+    <div class="row">
+        <!-- إحصائيات سريعة -->
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">نظرة عامة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-card-icon bg-info">
+                                    <i class="fas fa-elevator"></i>
+                                </div>
+                                <div class="stat-card-info">
+                                    <h5>المصاعد</h5>
+                                    <h3>{{ stats.elevators_count }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-card-icon bg-warning">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                                <div class="stat-card-info">
+                                    <h5>طلبات الصيانة</h5>
+                                    <h3>{{ stats.pending_requests }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-card-icon bg-success">
+                                    <i class="fas fa-file-contract"></i>
+                                </div>
+                                <div class="stat-card-info">
+                                    <h5>العقود النشطة</h5>
+                                    <h3>{{ stats.active_contracts }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-card-icon bg-danger">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="stat-card-info">
+                                    <h5>قطع غيار منخفضة</h5>
+                                    <h3>{{ stats.low_stock_parts }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- طلبات الصيانة الحالية -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="card-title mb-0">طلبات الصيانة الحالية</h5>
+                </div>
+                <div class="card-body">
+                    {% if current_requests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>رقم الطلب</th>
+                                    <th>المبنى</th>
+                                    <th>الأولوية</th>
+                                    <th>الحالة</th>
+                                    <th>التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in current_requests %}
+                                <tr class="clickable-row" data-href="{{ url_for('requests.view', request_id=request.id) }}">
+                                    <td>{{ request.id }}</td>
+                                    <td>{{ request.building_name }}</td>
+                                    <td>
+                                        {% if request.priority == 'عالية' %}
+                                        <span class="badge bg-danger">{{ request.priority }}</span>
+                                        {% elif request.priority == 'متوسطة' %}
+                                        <span class="badge bg-warning">{{ request.priority }}</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{{ request.priority }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if request.status == 'جديد' %}
+                                        <span class="badge bg-primary">{{ request.status }}</span>
+                                        {% elif request.status == 'قيد التنفيذ' %}
+                                        <span class="badge bg-warning">{{ request.status }}</span>
+                                        {% elif request.status == 'مكتمل' %}
+                                        <span class="badge bg-success">{{ request.status }}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ request.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ request.request_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        لا توجد طلبات صيانة حالية
+                    </div>
+                    {% endif %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('requests.index') }}" class="btn btn-outline-warning">عرض جميع الطلبات</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- العقود القريبة من الانتهاء -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">العقود القريبة من الانتهاء</h5>
+                </div>
+                <div class="card-body">
+                    {% if expiring_contracts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>رقم العقد</th>
+                                    <th>العميل</th>
+                                    <th>تاريخ الانتهاء</th>
+                                    <th>الأيام المتبقية</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contract in expiring_contracts %}
+                                <tr class="clickable-row" data-href="{{ url_for('contracts.view', contract_id=contract.id) }}">
+                                    <td>{{ contract.contract_number }}</td>
+                                    <td>{{ contract.client_name }}</td>
+                                    <td>{{ contract.end_date }}</td>
+                                    <td>
+                                        {% if contract.days_remaining <= 7 %}
+                                        <span class="badge bg-danger">{{ contract.days_remaining }} يوم</span>
+                                        {% elif contract.days_remaining <= 30 %}
+                                        <span class="badge bg-warning">{{ contract.days_remaining }} يوم</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{{ contract.days_remaining }} يوم</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        لا توجد عقود قريبة من الانتهاء
+                    </div>
+                    {% endif %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('contracts.index') }}" class="btn btn-outline-danger">عرض جميع العقود</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- قطع الغيار منخفضة المخزون -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">قطع الغيار منخفضة المخزون</h5>
+                </div>
+                <div class="card-body">
+                    {% if low_stock_parts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>اسم القطعة</th>
+                                    <th>الكمية المتوفرة</th>
+                                    <th>الحد الأدنى</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for part in low_stock_parts %}
+                                <tr class="clickable-row" data-href="{{ url_for('parts.view', part_id=part.id) }}">
+                                    <td>{{ part.name }}</td>
+                                    <td>{{ part.quantity }}</td>
+                                    <td>{{ part.min_quantity }}</td>
+                                    <td>
+                                        {% if part.quantity == 0 %}
+                                        <span class="badge bg-danger">غير متوفر</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">منخفض</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        لا توجد قطع غيار منخفضة المخزون
+                    </div>
+                    {% endif %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('parts.index') }}" class="btn btn-outline-info">عرض جميع قطع الغيار</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الرسوم البيانية -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">إحصائيات الصيانة</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="maintenanceChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // إعداد الرسم البياني
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('maintenanceChart').getContext('2d');
+        var maintenanceChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['يعمل', 'قيد الصيانة', 'متوقف', 'جديد', 'قيد المعالجة', 'مكتمل'],
+                datasets: [{
+                    label: 'طلبات الصيانة',
+                    data: [1, 2, 3, 4, 5, 6],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(255, 206, 86, 0.5)',
+                        'rgba(75, 192, 192, 0.5)',
+                        'rgba(153, 102, 255, 0.5)',
+                        'rgba(255, 159, 64, 0.5)',
+                        'rgba(255, 99, 132, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // جعل الصفوف قابلة للنقر
+        document.querySelectorAll('.clickable-row').forEach(function(row) {
+            row.addEventListener('click', function() {
+                window.location.href = this.dataset.href;
+            });
+        });
+    });
+</script>
+{% endblock %}

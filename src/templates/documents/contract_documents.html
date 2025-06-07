@@ -1,0 +1,193 @@
+{% extends 'layout.html' %}
+
+{% block title %}مستندات العقد{% endblock %}
+
+{% block styles %}
+<style>
+    .document-card {
+        transition: all 0.3s;
+        height: 100%;
+    }
+    .document-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .document-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    .tag-badge {
+        margin-right: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">مستندات العقد</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('contracts.index') }}">العقود</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('contracts.view_contract', contract_id=contract.id) }}">{{ contract.contract_number }}</a></li>
+        <li class="breadcrumb-item active">المستندات</li>
+    </ol>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-file-contract me-1"></i>
+                    معلومات العقد
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ contract.contract_number }}</h5>
+                    <p class="card-text">
+                        <strong>العميل:</strong> {{ contract.client_name }}<br>
+                        <strong>نوع العقد:</strong> {{ contract.contract_type }}<br>
+                        <strong>تاريخ البدء:</strong> {{ contract.start_date.strftime('%Y-%m-%d') }}<br>
+                        <strong>تاريخ الانتهاء:</strong> {{ contract.end_date.strftime('%Y-%m-%d') }}<br>
+                        <strong>قيمة العقد:</strong> {{ "{:,.2f}".format(contract.total_amount) }} ريال
+                    </p>
+                    <a href="{{ url_for('contracts.view_contract', contract_id=contract.id) }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-right me-1"></i> العودة إلى العقد
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-plus-circle me-1"></i>
+                    إضافة مستندات للعقد
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('document_contract_integration.upload_contract_document', contract_id=contract.id) }}" class="btn btn-success">
+                                    <i class="fas fa-upload me-1"></i> رفع مستند جديد
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#linkDocumentModal">
+                                    <i class="fas fa-link me-1"></i> ربط مستند موجود
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-file-alt me-1"></i>
+            مستندات العقد
+            <span class="badge bg-primary">{{ documents|length }}</span>
+        </div>
+        <div class="card-body">
+            {% if documents %}
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for document in documents %}
+                <div class="col">
+                    <div class="card document-card">
+                        <div class="card-body text-center">
+                            <div class="document-icon">
+                                {% if document.file_type in ['pdf'] %}
+                                <i class="far fa-file-pdf text-danger"></i>
+                                {% elif document.file_type in ['doc', 'docx'] %}
+                                <i class="far fa-file-word text-primary"></i>
+                                {% elif document.file_type in ['xls', 'xlsx'] %}
+                                <i class="far fa-file-excel text-success"></i>
+                                {% elif document.file_type in ['ppt', 'pptx'] %}
+                                <i class="far fa-file-powerpoint text-warning"></i>
+                                {% elif document.file_type in ['jpg', 'jpeg', 'png', 'gif'] %}
+                                <i class="far fa-file-image text-info"></i>
+                                {% else %}
+                                <i class="far fa-file text-secondary"></i>
+                                {% endif %}
+                            </div>
+                            <h5 class="card-title">{{ document.title }}</h5>
+                            <p class="card-text small text-muted">{{ document.description|truncate(50) }}</p>
+                            <div class="mb-2">
+                                {% for category in document.categories %}
+                                <span class="badge bg-secondary">{{ category.name }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {% for tag in document.tags %}
+                                <span class="badge bg-info tag-badge">{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                            <p class="card-text small">
+                                <i class="far fa-calendar-alt"></i> {{ document.upload_date.strftime('%Y-%m-%d') }}<br>
+                                <i class="far fa-user"></i> {{ document.user.full_name }}
+                            </p>
+                            <div class="btn-group w-100">
+                                <a href="{{ url_for('documents.view_document', document_id=document.id) }}" class="btn btn-sm btn-outline-primary">عرض</a>
+                                <a href="{{ url_for('documents.download_document', document_id=document.id) }}" class="btn btn-sm btn-outline-success">تحميل</a>
+                                <form action="{{ url_for('document_contract_integration.unlink_document_from_contract', contract_id=contract.id, document_id=document.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('هل أنت متأكد من إلغاء ربط هذا المستند من العقد؟')">إلغاء الربط</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                لا توجد مستندات مرتبطة بهذا العقد. يمكنك <a href="{{ url_for('document_contract_integration.upload_contract_document', contract_id=contract.id) }}">رفع مستند جديد</a> أو <a href="#" data-bs-toggle="modal" data-bs-target="#linkDocumentModal">ربط مستند موجود</a>.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- نموذج ربط مستند موجود -->
+<div class="modal fade" id="linkDocumentModal" tabindex="-1" aria-labelledby="linkDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="linkDocumentModalLabel">ربط مستند موجود بالعقد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('document_contract_integration.link_document_to_contract', contract_id=contract.id) }}" method="POST" id="linkDocumentForm">
+                    <div class="mb-3">
+                        <label for="document_id" class="form-label">اختر المستند</label>
+                        <select class="form-select" id="document_id" name="document_id" required>
+                            <option value="">اختر مستنداً...</option>
+                            {% for document in available_documents %}
+                            <option value="{{ document.id }}">{{ document.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="submit" form="linkDocumentForm" class="btn btn-primary">ربط المستند</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // تهيئة القوائم المنسدلة
+        $('#document_id').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'اختر مستنداً...',
+            dropdownParent: $('#linkDocumentModal')
+        });
+    });
+</script>
+{% endblock %}

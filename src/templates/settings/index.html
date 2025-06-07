@@ -1,0 +1,195 @@
+{% extends 'layout.html' %}
+
+{% block title %}إعدادات النظام{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">إعدادات النظام</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="company-tab" data-toggle="tab" href="#company" role="tab" aria-controls="company" aria-selected="true">
+                                <i class="fas fa-building"></i> بيانات الشركة
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="logo-tab" data-toggle="tab" href="#logo" role="tab" aria-controls="logo" aria-selected="false">
+                                <i class="fas fa-image"></i> الشعار والختم
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="financial-tab" data-toggle="tab" href="#financial" role="tab" aria-controls="financial" aria-selected="false">
+                                <i class="fas fa-money-bill"></i> البيانات المالية
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mt-4" id="settingsTabContent">
+                        <!-- بيانات الشركة -->
+                        <div class="tab-pane fade show active" id="company" role="tabpanel" aria-labelledby="company-tab">
+                            <form action="{{ url_for('settings.update_settings') }}" method="POST">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_name">اسم الشركة</label>
+                                            <input type="text" class="form-control" id="company_name" name="company_name" value="{{ settings.company_name }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_address">عنوان الشركة</label>
+                                            <input type="text" class="form-control" id="company_address" name="company_address" value="{{ settings.company_address }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_phone">رقم الهاتف</label>
+                                            <input type="text" class="form-control" id="company_phone" name="company_phone" value="{{ settings.company_phone }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_email">البريد الإلكتروني</label>
+                                            <input type="email" class="form-control" id="company_email" name="company_email" value="{{ settings.company_email }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_website">الموقع الإلكتروني</label>
+                                            <input type="text" class="form-control" id="company_website" name="company_website" value="{{ settings.company_website }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="tax_number">الرقم الضريبي</label>
+                                            <input type="text" class="form-control" id="tax_number" name="tax_number" value="{{ settings.tax_number }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="commercial_register">السجل التجاري</label>
+                                            <input type="text" class="form-control" id="commercial_register" name="commercial_register" value="{{ settings.commercial_register }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group text-center">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> حفظ البيانات
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- الشعار والختم -->
+                        <div class="tab-pane fade" id="logo" role="tabpanel" aria-labelledby="logo-tab">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0">شعار الشركة</h5>
+                                        </div>
+                                        <div class="card-body text-center">
+                                            <img src="{{ url_for('static', filename=settings.logo_path.replace('static/', '')) }}" alt="شعار الشركة" class="img-fluid mb-3" style="max-height: 150px;">
+                                            
+                                            <form action="{{ url_for('settings.upload_logo') }}" method="POST" enctype="multipart/form-data">
+                                                <div class="custom-file mb-3">
+                                                    <input type="file" class="custom-file-input" id="logo" name="logo" accept="image/*" required>
+                                                    <label class="custom-file-label" for="logo">اختر ملف الشعار</label>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-upload"></i> رفع الشعار
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0">ختم الشركة</h5>
+                                        </div>
+                                        <div class="card-body text-center">
+                                            <img src="{{ url_for('static', filename=settings.stamp_path.replace('static/', '')) }}" alt="ختم الشركة" class="img-fluid mb-3" style="max-height: 150px;">
+                                            
+                                            <form action="{{ url_for('settings.upload_stamp') }}" method="POST" enctype="multipart/form-data">
+                                                <div class="custom-file mb-3">
+                                                    <input type="file" class="custom-file-input" id="stamp" name="stamp" accept="image/*" required>
+                                                    <label class="custom-file-label" for="stamp">اختر ملف الختم</label>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-upload"></i> رفع الختم
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- البيانات المالية -->
+                        <div class="tab-pane fade" id="financial" role="tabpanel" aria-labelledby="financial-tab">
+                            <form action="{{ url_for('settings.update_settings') }}" method="POST">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="bank_name">اسم البنك</label>
+                                            <input type="text" class="form-control" id="bank_name" name="bank_name" value="{{ settings.bank_name }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="bank_account">رقم الحساب</label>
+                                            <input type="text" class="form-control" id="bank_account" name="bank_account" value="{{ settings.bank_account }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="iban">رقم الآيبان (IBAN)</label>
+                                            <input type="text" class="form-control" id="iban" name="iban" value="{{ settings.iban }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group text-center">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> حفظ البيانات
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // تغيير اسم الملف المختار في حقل رفع الملفات
+    $('.custom-file-input').on('change', function() {
+        var fileName = $(this).val().split('\\').pop();
+        $(this).next('.custom-file-label').html(fileName);
+    });
+</script>
+{% endblock %}

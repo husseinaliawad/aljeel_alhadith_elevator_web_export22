@@ -1,0 +1,45 @@
+{% extends 'layout.html' %}
+
+{% block title %}تأكيد إرسال الواتساب{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">تأكيد إرسال الواتساب</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item active">تأكيد إرسال الواتساب</li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fab fa-whatsapp me-1"></i>
+            رابط الواتساب جاهز
+        </div>
+        <div class="card-body">
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">تم إنشاء رابط الواتساب بنجاح!</h4>
+                <p>يمكنك الآن النقر على الزر أدناه لفتح تطبيق الواتساب وإرسال الرسالة.</p>
+            </div>
+            
+            <div class="text-center mb-4">
+                <a href="{{ whatsapp_link }}" class="btn btn-success btn-lg" target="_blank">
+                    <i class="fab fa-whatsapp me-2"></i> فتح الواتساب وإرسال الرسالة
+                </a>
+            </div>
+            
+            <div class="alert alert-info" role="alert">
+                <h5>ملاحظات:</h5>
+                <ul>
+                    <li>سيتم فتح تطبيق الواتساب أو موقع الواتساب ويب تلقائياً.</li>
+                    <li>ستظهر الرسالة جاهزة للإرسال، تحتاج فقط للضغط على زر الإرسال.</li>
+                    <li>إذا كنت تستخدم جهاز كمبيوتر، تأكد من تسجيل الدخول إلى الواتساب ويب أولاً.</li>
+                </ul>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">العودة إلى لوحة التحكم</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
