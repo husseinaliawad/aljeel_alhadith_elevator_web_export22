@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}إضافة عرض سعر جديد{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        إضافة عرض سعر جديد
+                    </h3>
+                </div>
+                <form method="POST">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="quote_number">رقم العرض <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="quote_number" name="quote_number" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="client_name">اسم العميل <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="client_name" name="client_name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="client_email">البريد الإلكتروني</label>
+                                    <input type="email" class="form-control" id="client_email" name="client_email">
+                                </div>
+                                <div class="form-group">
+                                    <label for="client_phone">رقم الهاتف</label>
+                                    <input type="tel" class="form-control" id="client_phone" name="client_phone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="project_type">نوع المشروع <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="project_type" name="project_type" required>
+                                        <option value="">اختر نوع المشروع</option>
+                                        <option value="تركيب مصعد جديد">تركيب مصعد جديد</option>
+                                        <option value="صيانة دورية">صيانة دورية</option>
+                                        <option value="إصلاح وتطوير">إصلاح وتطوير</option>
+                                        <option value="استشارة فنية">استشارة فنية</option>
+                                        <option value="قطع غيار">قطع غيار</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="quote_date">تاريخ العرض <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="quote_date" name="quote_date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="valid_until">صالح حتى <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="valid_until" name="valid_until" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="total_amount">المبلغ الإجمالي <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" class="form-control" id="total_amount" name="total_amount" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tax_amount">قيمة الضريبة</label>
+                                    <input type="number" step="0.01" class="form-control" id="tax_amount" name="tax_amount" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="status">الحالة <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="status" name="status" required>
+                                        <option value="مسودة">مسودة</option>
+                                        <option value="مرسل">مرسل</option>
+                                        <option value="مقبول">مقبول</option>
+                                        <option value="مرفوض">مرفوض</option>
+                                        <option value="منتهي الصلاحية">منتهي الصلاحية</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="project_description">وصف المشروع <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="project_description" name="project_description" rows="4" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="terms_conditions">الشروط والأحكام</label>
+                            <textarea class="form-control" id="terms_conditions" name="terms_conditions" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="notes">ملاحظات إضافية</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            حفظ العرض
+                        </button>
+                        <a href="{{ url_for('quotes.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            إلغاء
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

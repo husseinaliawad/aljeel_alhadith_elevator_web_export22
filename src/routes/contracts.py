@@ -25,9 +25,24 @@ def index():
     else:
         contracts = Contract.query.filter_by(status=status_filter).order_by(Contract.start_date.desc()).all()
     
+    # إحصائيات حالات العقود للرسم البياني
+    all_contracts = Contract.query.all()
+    active_count = len([c for c in all_contracts if c.status == 'ساري'])
+    expiring_count = len([c for c in all_contracts if c.status == 'ساري' and c.days_until_expiry() <= 30])
+    expired_count = len([c for c in all_contracts if c.status == 'منتهي'])
+    
+    status_data = [active_count, expiring_count, expired_count]
+    
+    # بيانات الإيرادات الشهرية (مثال بسيط)
+    months_labels = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو']
+    revenue_data = [0, 0, 0, 0, 0, 0]  # يمكن تحسينها لاحقاً بحساب الإيرادات الفعلية
+    
     return render_template('contracts/index.html', 
                           contracts=contracts, 
-                          status_filter=status_filter)
+                          status_filter=status_filter,
+                          status_data=status_data,
+                          months_labels=months_labels,
+                          revenue_data=revenue_data)
 
 # إضافة عقد جديد
 @contracts.route('/add', methods=['GET', 'POST'])

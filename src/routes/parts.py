@@ -22,9 +22,9 @@ def index():
     # بناء الاستعلام الأساسي
     query = Part.query
     
-    # تطبيق التصفية حسب الفئة
-    if category_filter != 'all':
-        query = query.filter_by(category=category_filter)
+    # بما أن نموذج Part لا يحتوي على حقل category، نتجاهل تصفية الفئة
+    # if category_filter != 'all':
+    #     query = query.filter_by(category=category_filter)
     
     # تطبيق التصفية حسب المخزون
     if stock_filter == 'low':
@@ -35,15 +35,28 @@ def index():
     # تنفيذ الاستعلام
     parts_list = query.order_by(Part.name).all()
     
-    # الحصول على قائمة الفئات المتاحة
-    categories = db.session.query(Part.category).distinct().all()
-    categories = [category[0] for category in categories if category[0]]
+    # إعداد بيانات المخزون للرسم البياني
+    available_count = len([p for p in parts_list if p.quantity >= p.min_quantity])
+    low_stock_count = len([p for p in parts_list if 0 < p.quantity < p.min_quantity])
+    out_of_stock_count = len([p for p in parts_list if p.quantity == 0])
+    
+    stock_data = [available_count, low_stock_count, out_of_stock_count]
+    
+    # إعداد بيانات أكثر قطع الغيار استخداماً (مثال بسيط)
+    top_parts_labels = [part.name for part in parts_list[:5]]  # أول 5 قطع
+    top_parts_data = [0, 0, 0, 0, 0]  # يمكن تحسينها لاحقاً بحساب الاستخدام الفعلي
+    
+    # بما أن نموذج Part لا يحتوي على حقل category، نستخدم قائمة فارغة
+    categories = []
     
     return render_template('parts/index.html', 
                           parts=parts_list, 
                           categories=categories,
                           category_filter=category_filter,
-                          stock_filter=stock_filter)
+                          stock_filter=stock_filter,
+                          stock_data=stock_data,
+                          top_parts_labels=top_parts_labels,
+                          top_parts_data=top_parts_data)
 
 # إضافة قطعة غيار جديدة
 @parts.route('/add', methods=['GET', 'POST'])
@@ -61,13 +74,10 @@ def add():
         
         new_part = Part(
             name=name,
-            part_number=part_number,
             description=description,
-            category=category,
             quantity=int(quantity),
             min_quantity=int(min_quantity),
-            price=float(price),
-            supplier=supplier
+            price=float(price)
         )
         
         db.session.add(new_part)
@@ -76,9 +86,8 @@ def add():
         flash('تم إضافة قطعة الغيار بنجاح', 'success')
         return redirect(url_for('parts.index'))
     
-    # الحصول على قائمة الفئات المتاحة للاختيار
-    categories = db.session.query(Part.category).distinct().all()
-    categories = [category[0] for category in categories if category[0]]
+    # بما أن نموذج Part لا يحتوي على حقل category، نستخدم قائمة فارغة
+    categories = []
     
     return render_template('parts/add.html', categories=categories)
 
@@ -117,22 +126,18 @@ def edit(part_id):
     
     if request.method == 'POST':
         part.name = request.form.get('name')
-        part.part_number = request.form.get('part_number')
         part.description = request.form.get('description')
-        part.category = request.form.get('category')
         part.quantity = int(request.form.get('quantity', 0))
         part.min_quantity = int(request.form.get('min_quantity', 0))
         part.price = float(request.form.get('price', 0.0))
-        part.supplier = request.form.get('supplier')
         
         db.session.commit()
         
         flash('تم تحديث قطعة الغيار بنجاح', 'success')
         return redirect(url_for('parts.view', part_id=part.id))
     
-    # الحصول على قائمة الفئات المتاحة للاختيار
-    categories = db.session.query(Part.category).distinct().all()
-    categories = [category[0] for category in categories if category[0]]
+    # بما أن نموذج Part لا يحتوي على حقل category، نستخدم قائمة فارغة
+    categories = []
     
     return render_template('parts/edit.html', 
                           part=part,
@@ -216,8 +221,9 @@ def api_list():
     
     query = Part.query
     
-    if category_filter != 'all':
-        query = query.filter_by(category=category_filter)
+    # بما أن نموذج Part لا يحتوي على حقل category، نتجاهل تصفية الفئة
+    # if category_filter != 'all':
+    #     query = query.filter_by(category=category_filter)
     
     if stock_filter == 'low':
         query = query.filter(Part.quantity < Part.min_quantity)

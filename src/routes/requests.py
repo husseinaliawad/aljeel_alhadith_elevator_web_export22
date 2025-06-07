@@ -22,13 +22,30 @@ def index():
     
     # استعلام قاعدة البيانات بناءً على التصفية
     if status_filter == 'all':
-        requests = MaintenanceRequest.query.order_by(MaintenanceRequest.request_date.desc()).all()
+        requests_list = MaintenanceRequest.query.order_by(MaintenanceRequest.request_date.desc()).all()
     else:
-        requests = MaintenanceRequest.query.filter_by(status=status_filter).order_by(MaintenanceRequest.request_date.desc()).all()
+        requests_list = MaintenanceRequest.query.filter_by(status=status_filter).order_by(MaintenanceRequest.request_date.desc()).all()
+    
+    # إحصائيات حالات الطلبات للرسم البياني
+    status_labels = ['جديد', 'قيد المعالجة', 'مكتمل', 'ملغي']
+    status_data = [
+        MaintenanceRequest.query.filter_by(status='جديد').count(),
+        MaintenanceRequest.query.filter_by(status='قيد المعالجة').count(),
+        MaintenanceRequest.query.filter_by(status='مكتمل').count(),
+        MaintenanceRequest.query.filter_by(status='ملغي').count()
+    ]
+    
+    # إحصائيات أنواع المشاكل للرسم البياني
+    issue_labels = ['كهربائية', 'ميكانيكية', 'أمان', 'أخرى']
+    issue_data = [0, 0, 0, 0]  # يمكن تحسينها لاحقاً بتصنيف المشاكل
     
     return render_template('requests/index.html', 
-                          requests=requests, 
-                          status_filter=status_filter)
+                          requests=requests_list, 
+                          status_filter=status_filter,
+                          status_labels=status_labels,
+                          status_data=status_data,
+                          issue_labels=issue_labels,
+                          issue_data=issue_data)
 
 # إضافة طلب صيانة جديد
 @requests.route('/add', methods=['GET', 'POST'])

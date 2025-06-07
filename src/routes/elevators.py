@@ -14,10 +14,38 @@ elevators = Blueprint('elevators', __name__, url_prefix='/elevators')
 
 # عرض قائمة المصاعد
 @elevators.route('/')
-# @login_required - تم إزالة متطلب تسجيل الدخول مؤقتاً
+@login_required
 def index():
-    elevators = Elevator.query.all()
-    return render_template('elevators/index.html', elevators=elevators)
+    elevators_list = Elevator.query.all()
+    
+    # إحصائيات حالات المصاعد للرسم البياني
+    status_labels = ['يعمل', 'قيد الصيانة', 'متوقف']
+    status_data = [
+        Elevator.query.filter_by(status='يعمل').count(),
+        Elevator.query.filter_by(status='قيد الصيانة').count(),
+        Elevator.query.filter_by(status='متوقف').count()
+    ]
+    
+    # إحصائيات أنواع المصاعد للرسم البياني
+    # الحصول على جميع الأنواع المختلفة
+    elevator_types = db.session.query(Elevator.model).distinct().all()
+    type_labels = [elevator_type[0] for elevator_type in elevator_types if elevator_type[0]]
+    type_data = [
+        Elevator.query.filter_by(model=elevator_type).count() 
+        for elevator_type in type_labels
+    ]
+    
+    # إذا لم توجد أنواع، استخدم قيم افتراضية
+    if not type_labels:
+        type_labels = ['لا توجد بيانات']
+        type_data = [0]
+    
+    return render_template('elevators/index.html', 
+                          elevators=elevators_list,
+                          status_labels=status_labels,
+                          status_data=status_data,
+                          type_labels=type_labels,
+                          type_data=type_data)
 
 # إضافة مصعد جديد
 @elevators.route('/add', methods=['GET', 'POST'])

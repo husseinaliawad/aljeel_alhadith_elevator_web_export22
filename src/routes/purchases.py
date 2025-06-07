@@ -10,7 +10,41 @@ from datetime import datetime
 import uuid
 
 # إنشاء blueprint للمشتريات
-purchases = Blueprint('purchases', __name__)
+purchases_bp = Blueprint('purchases', __name__)
+purchases = purchases_bp  # للتوافق مع الكود الموجود
+
+# الصفحة الرئيسية للمشتريات
+@purchases.route('/')
+@login_required
+def index():
+    # إحصائيات عامة
+    stats = {
+        'suppliers_count': Supplier.query.count(),
+        'orders_count': PurchaseOrder.query.count(),
+        'pending_orders': PurchaseOrder.query.filter_by(status='draft').count(),
+        'total_amount': sum([order.final_amount or 0 for order in PurchaseOrder.query.all()])
+    }
+    
+    # أحدث أوامر الشراء
+    recent_orders = PurchaseOrder.query.order_by(PurchaseOrder.created_at.desc()).limit(10).all()
+    
+    # بيانات الرسم البياني للمشتريات الشهرية
+    monthly_data = {
+        'labels': ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+        'values': [0, 0, 0, 0, 0, 0]  # يمكن تحسينها لاحقاً بحساب المشتريات الفعلية
+    }
+    
+    # بيانات توزيع المشتريات حسب المورد
+    supplier_data = {
+        'labels': ['لا توجد بيانات'],
+        'values': [0]  # يمكن تحسينها لاحقاً بحساب التوزيع الفعلي
+    }
+    
+    return render_template('purchases/index.html',
+                          stats=stats,
+                          recent_orders=recent_orders,
+                          monthly_data=monthly_data,
+                          supplier_data=supplier_data)
 
 # صفحة الموردين
 @purchases.route('/suppliers')

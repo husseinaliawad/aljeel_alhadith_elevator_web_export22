@@ -2,8 +2,8 @@
 تكامل جميع مسارات التطبيق مع إعدادات البيئة المناسبة
 """
 import os
-from flask import Flask, redirect, url_for
-from flask_login import LoginManager
+from flask import Flask, redirect, url_for, render_template
+from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
 from src.config import config
 from src.models.db import db
@@ -20,8 +20,10 @@ def create_app(config_name=None):
     if config_name is None:
         config_name = os.environ.get('FLASK_CONFIG') or 'default'
     
-    # إنشاء تطبيق Flask
-    app = Flask(__name__)
+    # إنشاء تطبيق Flask مع مسار الملفات الثابتة الصحيح
+    app = Flask(__name__, 
+                static_folder='static',
+                static_url_path='/static')
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
     
@@ -29,6 +31,23 @@ def create_app(config_name=None):
     db.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
+    
+    # إضافة context processor للمتغيرات العامة
+    @app.context_processor
+    def inject_global_vars():
+        """توفير المتغيرات العامة لجميع القوالب"""
+        notifications = []
+        notifications_count = 0
+        
+        # إذا كان المستخدم مسجل الدخول، يمكن إضافة إشعارات حقيقية هنا
+        if current_user and current_user.is_authenticated:
+            # يمكن إضافة منطق الإشعارات هنا لاحقاً
+            pass
+        
+        return {
+            'notifications': notifications,
+            'notifications_count': notifications_count
+        }
     
     # تسجيل المسارات
     from src.routes.auth import auth as auth_blueprint
@@ -67,6 +86,9 @@ def create_app(config_name=None):
     from src.routes.settings import settings_bp
     app.register_blueprint(settings_bp)
     
+    from src.routes.setup import setup
+    app.register_blueprint(setup)
+    
     # معالجة الأخطاء
     @app.errorhandler(404)
     def page_not_found(e):
@@ -79,16 +101,26 @@ def create_app(config_name=None):
     # إعادة توجيه الصفحة الرئيسية إلى لوحة المعلومات
     @app.route('/')
     def index():
-        try:
-            # تجربة استخدام ملف ثابت إذا كان موجوداً
-            return app.send_static_file('index.html')
-        except:
-            # إعادة التوجيه إلى لوحة المعلومات إذا لم يكن الملف الثابت موجوداً
-            return redirect(url_for('dashboard.index'))
+        return redirect(url_for('dashboard.dashboard_view'))
+    
+    # إضافة route لاختبار الملفات الثابتة
+    @app.route('/test-static')
+    def test_static():
+        return f"""
+        <h1>اختبار الملفات الثابتة</h1>
+        <p>مسار الملفات الثابتة: {app.static_folder}</p>
+        <p>URL الملفات الثابتة: {app.static_url_path}</p>
+        <link rel="stylesheet" href="{url_for('static', filename='css/bootstrap.min.css')}">
+        <script src="{url_for('static', filename='js/bootstrap.bundle.min.js')}"></script>
+        <div class="alert alert-success">إذا ظهر هذا النص بتنسيق جميل، فالملفات الثابتة تعمل!</div>
+        """
     
     # إنشاء جميع الجداول إذا لم تكن موجودة
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+        except Exception as e:
+            app.logger.error(f'خطأ في إنشاء الجداول: {e}')
     
     return app
 
@@ -139,6 +171,3 @@ if not app.debug and not app.testing:
     app.logger.addHandler(file_handler)
     app.logger.setLevel(logging.INFO)
     app.logger.info('تم بدء تشغيل التطبيق')
-
-# استيراد render_template لمعالجة الأخطاء
-from flask import render_template

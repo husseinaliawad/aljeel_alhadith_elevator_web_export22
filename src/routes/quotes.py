@@ -26,9 +26,24 @@ def index():
     else:
         quotes = Quote.query.filter_by(status=status_filter).order_by(Quote.issue_date.desc()).all()
     
+    # إحصائيات حالات عروض الأسعار للرسم البياني
+    status_data = [
+        Quote.query.filter_by(status='معلق').count(),
+        Quote.query.filter_by(status='مقبول').count(),
+        Quote.query.filter_by(status='مرفوض').count(),
+        Quote.query.filter_by(status='منتهي').count()
+    ]
+    
+    # بيانات معدل التحويل الشهري
+    months_labels = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو']
+    conversion_data = [0, 0, 0, 0, 0, 0]  # يمكن تحسينها لاحقاً بحساب معدل التحويل الفعلي
+    
     return render_template('quotes/index.html', 
                           quotes=quotes, 
-                          status_filter=status_filter)
+                          status_filter=status_filter,
+                          status_data=status_data,
+                          months_labels=months_labels,
+                          conversion_data=conversion_data)
 
 # إضافة عرض سعر جديد
 @quotes.route('/add', methods=['GET', 'POST'])

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}إضافة عقد جديد{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-file-contract"></i>
+                        إضافة عقد جديد
+                    </h3>
+                </div>
+                <form method="POST">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="contract_number">رقم العقد <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="contract_number" name="contract_number" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="client_name">اسم العميل <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="client_name" name="client_name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="elevator_id">المصعد</label>
+                                    <select class="form-control" id="elevator_id" name="elevator_id">
+                                        <option value="">اختر المصعد</option>
+                                        {% for elevator in elevators %}
+                                        <option value="{{ elevator.id }}">{{ elevator.building_name }} - {{ elevator.model }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contract_type">نوع العقد <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="contract_type" name="contract_type" required>
+                                        <option value="">اختر نوع العقد</option>
+                                        <option value="صيانة">صيانة</option>
+                                        <option value="تركيب">تركيب</option>
+                                        <option value="تطوير">تطوير</option>
+                                        <option value="استشارة">استشارة</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="start_date">تاريخ البداية <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="end_date">تاريخ النهاية <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="total_amount">المبلغ الإجمالي <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" class="form-control" id="total_amount" name="total_amount" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="status">الحالة <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="status" name="status" required>
+                                        <option value="ساري">ساري</option>
+                                        <option value="منتهي">منتهي</option>
+                                        <option value="معلق">معلق</option>
+                                        <option value="ملغي">ملغي</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">وصف العقد</label>
+                            <textarea class="form-control" id="description" name="description" rows="4"></textarea>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            حفظ العقد
+                        </button>
+                        <a href="{{ url_for('contracts.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            إلغاء
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

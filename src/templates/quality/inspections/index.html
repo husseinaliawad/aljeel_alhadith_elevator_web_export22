@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}التفتيشات والفحوصات{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-search"></i>
+                        التفتيشات والفحوصات
+                    </h3>
+                    <div class="card-tools">
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i>
+                            إضافة تفتيش جديد
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if inspections %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>رقم التفتيش</th>
+                                    <th>المصعد</th>
+                                    <th>نوع التفتيش</th>
+                                    <th>تاريخ التفتيش</th>
+                                    <th>المفتش</th>
+                                    <th>النتيجة</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inspection in inspections %}
+                                <tr>
+                                    <td>{{ inspection.inspection_number }}</td>
+                                    <td>
+                                        {% if inspection.elevator %}
+                                            {{ inspection.elevator.building_name }} - {{ inspection.elevator.model }}
+                                        {% else %}
+                                            غير محدد
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ inspection.inspection_type }}</td>
+                                    <td>{{ inspection.inspection_date.strftime('%Y-%m-%d') if inspection.inspection_date else 'غير محدد' }}</td>
+                                    <td>{{ inspection.inspector_name or 'غير محدد' }}</td>
+                                    <td>
+                                        {% if inspection.result == 'مقبول' %}
+                                            <span class="badge badge-success">{{ inspection.result }}</span>
+                                        {% elif inspection.result == 'مرفوض' %}
+                                            <span class="badge badge-danger">{{ inspection.result }}</span>
+                                        {% elif inspection.result == 'يحتاج متابعة' %}
+                                            <span class="badge badge-warning">{{ inspection.result }}</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">{{ inspection.result or 'غير محدد' }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if inspection.status == 'مكتمل' %}
+                                            <span class="badge badge-success">{{ inspection.status }}</span>
+                                        {% elif inspection.status == 'قيد التنفيذ' %}
+                                            <span class="badge badge-info">{{ inspection.status }}</span>
+                                        {% elif inspection.status == 'مجدول' %}
+                                            <span class="badge badge-primary">{{ inspection.status }}</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">{{ inspection.status or 'غير محدد' }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="#" class="btn btn-info btn-sm" title="عرض التفاصيل">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-warning btn-sm" title="تعديل">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-success btn-sm" title="طباعة التقرير">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">لا توجد تفتيشات مسجلة</h4>
+                        <p class="text-muted">ابدأ بإضافة أول تفتيش للمصاعد</p>
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            إضافة تفتيش جديد
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- إحصائيات سريعة -->
+    <div class="row mt-4">
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ inspections|length }}</h3>
+                    <p>إجمالي التفتيشات</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>{{ inspections|selectattr('result', 'equalto', 'مقبول')|list|length }}</h3>
+                    <p>تفتيشات مقبولة</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ inspections|selectattr('result', 'equalto', 'يحتاج متابعة')|list|length }}</h3>
+                    <p>يحتاج متابعة</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3>{{ inspections|selectattr('result', 'equalto', 'مرفوض')|list|length }}</h3>
+                    <p>تفتيشات مرفوضة</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
